@@ -3,7 +3,7 @@ console.log("connect to socket")
 const videoGrid = document.getElementById("video-grid");
 const myVideo = document.createElement("video");
 const constraints = { 
-    video: { width:400, height:300 }, audio: true
+    video: true, audio: true
 };
 myVideo.muted = true;
 
@@ -110,9 +110,9 @@ const controlsVideo = document.querySelector(".controls__video");
 chatToggle.addEventListener("click", () => {
     if(sectionChat.style.display === "none") {
         sectionChat.style.display = "block";
-        sectionVideo.style.width = "80%";
-        controlsVideo.style.width = "80%";
-        sectionChat.style.width = "20%";
+        sectionVideo.style.width = "75%";
+        controlsVideo.style.width = "75%";
+        sectionChat.style.width = "25%";
     }else{
         sectionChat.style.display = "none";
         sectionVideo.style.width = "100%";
@@ -145,3 +145,15 @@ videoStop.addEventListener("click", () => {
 })
 
 
+const chatInput = document.getElementById("chat__input");
+chatInput.addEventListener("keydown", (e) => {
+    if(e.key === "Enter" && chatInput.value.length !== 0){
+        socket.emit("chatMessage", chatInput.value);
+        chatInput.value = "";
+    };
+});
+
+const messagesBorder = document.querySelector(".messagesBorder");
+socket.on("createMessage", (message, userId) => {
+    messagesBorder.innerHTML = messagesBorder.innerHTML + `<div class="messages"><li class="user">${userId}</li><li class="message">${message}</li></div>`;
+});

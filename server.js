@@ -23,11 +23,6 @@ io.on("connection", socket => {
             socket.broadcast.to(roomId).emit("userConnected", userId);
         }, 1000)
         console.log("userConnected事件", userId)
-        
-        socket.on("sendMessage", (message) => {
-            socket.broadcast.to(roomId).emit("createMessage", message, userId);
-            console.log("createMessage事件", message, userId)
-        })
 
         socket.on("disconnect", () => {
             socket.leave(roomId);
@@ -37,10 +32,9 @@ io.on("connection", socket => {
             console.log("userDisconnected事件", userId)
         })
 
+
         socket.on("chatMessage", (message) => {
-            console.log("收到訊息")
-            socket.broadcast.to(roomId).emit("createMessage", message, userId);
-            console.log("createMessage事件", message, userId)
+            io.to(roomId).emit("createMessage", message, userId);
         })
     })
 });
