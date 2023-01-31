@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="/css/index.css">
     <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <script src="https://kit.fontawesome.com/0145397512.js" crossorigin="anonymous"></script>
     <title>TeamTalk</title>
 </head>
 <body>
@@ -18,11 +19,11 @@
                 <div id="video-grid"></div>
             </div>
             <div class="controls__video">
-                <button id="video__mute">Audio</button>
-                <button id="video__stop">Video</button>
-                <button id="video__shareScreen">Share Screen</button>
-                <button id="video__chat">Chat</button>
-                <button id="video__disconnect">Disconnect</button>
+                <button id="video__mute"><i class="fa-solid fa-microphone"></i><i class="fa-solid fa-microphone-slash" style="display:none;"></i><div>Audio</div></button>
+                <button id="video__stop"><i class="fa-solid fa-video"></i><i class="fa-solid fa-video-slash" style="display:none;"></i><div>Video</div></button>
+                <button id="video__shareScreen"><i class="fa-solid fa-display"></i><div>ScreenSharing</div></button>
+                <button id="video__chat"><i class="fa-solid fa-comment"></i><div>Chat</div></button>
+                <button id="video__disconnect"><i class="fa-solid fa-phone-slash"></i><div>Disconnect</div></button>
             </div>
         </div>
         <div class="section__chat" id="section__chat" style="display:none;">

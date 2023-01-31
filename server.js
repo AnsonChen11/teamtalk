@@ -1,9 +1,10 @@
 const express = require("express")
 const path = require("path");
 const hbs = require("hbs");
-const http = require("http")
 const PORT = 5000
 const app = express()
+
+const http = require("http")
 const server = http.createServer(app)
 const io = require("socket.io")(server);
 const { ExpressPeerServer } = require("peer");
@@ -11,7 +12,6 @@ const peerServer = ExpressPeerServer(server, {
     debug: true 
 });
 const { v4: uuidV4 } = require("uuid")
-
 
 app.use("/peerjs", peerServer);
 
@@ -35,6 +35,11 @@ io.on("connection", socket => {
 
         socket.on("chatMessage", (message) => {
             io.to(roomId).emit("createMessage", message, userId);
+        })
+
+        socket.on("finishedScreenStream", (video) => {
+            socket.broadcast.to(roomId).emit("removeScreenStream", video);
+            console.log("發送removeScreenStream事件", video)
         })
     })
 });

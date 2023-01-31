@@ -1,4 +1,5 @@
-const socket = io("/");
+const socket = io.connect("/", {secure: true});
+// const socket = io("/");
 console.log("connect to socket")
 const videoGrid = document.getElementById("video-grid");
 const myVideo = document.createElement("video");
@@ -7,11 +8,15 @@ const constraints = {
 };
 myVideo.muted = true;
 
+// let myPeer = new Peer({
+//     path: "/peerjs",
+//     host: "/",
+//     port: "5000",
+//     debug: 3
+// });
+
 let myPeer = new Peer({
-    path: "/peerjs",
-    host: "/",
-    port: "5000",
-    debug: 3
+    secure: true
 });
 console.log("connect to peer")
 let myVideoStream;
@@ -35,16 +40,25 @@ navigator
         //新成員收到連接請求後，會發出 "call" 事件，並回答通話
         myPeer.on("call", call => { //其他 myPeer物件向該myPeer發出呼叫時觸發。呼叫時，其他myPeer物件會建立一個call物件
             console.log('someone call me');
-            call.answer(stream); //其他使用者發送自己的媒體流
-            console.log('call and answer');
-            const video = document.createElement("video");
-            call.on("stream", (userVideoStream) => { //註冊stream事件，當對方連接到Peer物件時並回答呼叫，對方會發送自己的媒體流，此時觸發stream事件
-                addVideoStream(video, userVideoStream) //加入其他使用者的stream
-                console.log("加入新媒體")
-            })
+            if(call.metadata.type === "screen-sharing"){ //此為分享畫面的串流，做特殊處理
+                const video = document.createElement("video");
+                video.classList = "screenVideo";
+                call.answer(stream);
+                call.on("stream", (shareScreenStream) => { //註冊stream事件，當對方連接到Peer物件時並回答呼叫，對方會發送自己的媒體流，此時觸發stream事件
+                    addVideoStream(video, shareScreenStream) //加入其他使用者的stream
+                    console.log("加入分享畫面")
+                })
+            }
+            if(call.metadata.type === "join-room"){ //此為加入房間的串流，做一般處理
+                const video = document.createElement("video");
+                call.answer(stream); //其他使用者發送自己的媒體流
+                call.on("stream", (userVideoStream) => { //註冊stream事件，當對方連接到Peer物件時並回答呼叫，對方會發送自己的媒體流，此時觸發stream事件
+                    addVideoStream(video, userVideoStream) //加入其他使用者的stream
+                    console.log("加入一般視訊媒體")
+                })
+            }
         })
         socket.on("userConnected", (userId) => {
-            console.log("user-connected", userId)
             connectToNewUser(userId, stream);
         })
     })
@@ -72,7 +86,7 @@ function addVideoStream(video, userVideoStream){
 //建立一個 myPeer.connect 到新成員的 myPeer。
 function connectToNewUser(userId, stream){
     console.log('I call someone' + userId);
-    const call = myPeer.call(userId, stream); 
+    const call = myPeer.call(userId, stream, {metadata: {type: "join-room"}}); //加入type判斷是屬於哪種類型的媒體串流
     console.log(call)
     const video = document.createElement("video");
     call.on("stream", (userVideoStream) => {
@@ -102,10 +116,13 @@ socket.on("userDisconnected", (userId) => {
 
 const audioMute = document.getElementById("video__mute");
 const videoStop = document.getElementById("video__stop");
+const shareScreen = document.getElementById("video__shareScreen");
 const chatToggle = document.getElementById("video__chat");
+const disconnect = document.getElementById("video__disconnect");
 const sectionChat = document.getElementById("section__chat");
 const sectionVideo = document.querySelector(".section__video");
 const controlsVideo = document.querySelector(".controls__video");
+
 
 chatToggle.addEventListener("click", () => {
     if(sectionChat.style.display === "none") {
@@ -113,7 +130,8 @@ chatToggle.addEventListener("click", () => {
         sectionVideo.style.width = "75%";
         controlsVideo.style.width = "75%";
         sectionChat.style.width = "25%";
-    }else{
+    }
+    else{
         sectionChat.style.display = "none";
         sectionVideo.style.width = "100%";
         controlsVideo.style.width = "100%";
@@ -121,29 +139,91 @@ chatToggle.addEventListener("click", () => {
 });
 
 audioMute.addEventListener("click", () => {
-    const AudioTrack = myVideoStream.getAudioTracks()[0]; 
-    if(AudioTrack.enabled === true){
-        AudioTrack.enabled = false;
+    const audioTrack = myVideoStream.getAudioTracks()[0]; 
+    const audioIcon = document.querySelector(".fa-microphone")
+    const audioSlashIcon = document.querySelector(".fa-microphone-slash")
+    if(audioTrack.enabled === true){
+        audioTrack.enabled = false;
         audioMute.style.backgroundColor = "rgb(192, 13, 13)";
+        audioIcon.style.display = "none";
+        audioSlashIcon.style.display = "block";
     }
     else{
-        AudioTrack.enabled = true;
+        audioTrack.enabled = true;
         audioMute.style.backgroundColor = "rgb(82, 83, 83)";
+        audioIcon.style.display = "block";
+        audioSlashIcon.style.display = "none";
     }
 })
 
 videoStop.addEventListener("click", () => {
     const videoTrack = myVideoStream.getVideoTracks()[0]; 
+    const videoIcon = document.querySelector(".fa-video")
+    const videoSlashIcon = document.querySelector(".fa-video-slash")
     if(videoTrack.enabled === true){
         videoTrack.enabled = false;
         videoStop.style.backgroundColor = "rgb(192, 13, 13)";
+        videoIcon.style.display = "none";
+        videoSlashIcon.style.display = "block";
     }
     else{
         videoTrack.enabled = true;
         videoStop.style.backgroundColor = "rgb(82, 83, 83)";
+        videoIcon.style.display = "block";
+        videoSlashIcon.style.display = "none";
     }
 })
 
+shareScreen.addEventListener("click", () => {
+    try{
+        navigator
+            .mediaDevices
+            .getDisplayMedia()
+            .then(screenStream => {
+                const video = document.createElement("video");
+                video.classList = "screenVideo";
+                addVideoStream(video, screenStream);
+                shareScreen.style.backgroundColor = "rgb(58, 173, 102)";
+                shareScreen.disabled = true;
+                const connectedPeers = Object.keys(myPeer.connections);
+
+                if(connectedPeers.length > 0){
+                    shareScreenToPeers(screenStream, connectedPeers)
+                }
+                
+                screenStream.getVideoTracks()[0].addEventListener("ended", () => {
+                    socket.emit("finishedScreenStream", video);
+                    console.log("發送finishedScreenStream事件", )
+                    shareScreen.disabled = false;
+                    shareScreen.style.backgroundColor = "rgb(82, 83, 83)";
+                    video.remove();
+                    console.log("結束分享螢幕");
+                });
+            });
+    } 
+    catch(error){
+        console.error(`Error: ${error}`);
+    }
+});
+
+function shareScreenToPeers(screenStream, connectedPeers){
+    connectedPeers.forEach(peerId => {
+        myPeer.call(peerId, screenStream, { metadata: { type: "screen-sharing" } }); //加入type判斷是屬於哪種類型的媒體串流
+        console.log("通知所有使用者")
+    });
+};
+
+socket.on("removeScreenStream", (video) => {
+    console.log(video)
+    const screenVideo = document.querySelector(".screenVideo")
+    screenVideo.remove();
+    console.log("移除新的video")
+})
+
+// disconnect.addEventListener("click", () => {
+//     console.log("Disconnect")
+//     myPeer.close
+// })
 
 const chatInput = document.getElementById("chat__input");
 chatInput.addEventListener("keydown", (e) => {

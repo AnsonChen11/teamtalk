@@ -43,12 +43,19 @@ video{
     width: 400px; 
     height: 300px;
 }
+.screenVideo{
+    transform: rotateY(0deg);
+    -webkit-transform:rotateY(0deg); 
+    -moz-transform:rotateY(0deg);
+    width: 100%; 
+    /* height: 100%; */
+}
 .section__chat{
     flex: 25%;
-    background-color: white
+    background-color: rgb(30, 30, 30)
 }
 .chat__header{
-    color: rgb(82, 82, 85);
+    color: #acacac;
     text-align: center;
     font-weight: 700;
     margin-top: 10px;
@@ -65,9 +72,21 @@ video{
     width: 80%;
     box-sizing: border-box;
     padding: 10px;
+    border-style: none;
+    border-top: 1px solid #acacac;
+    background-color: rgb(30, 30, 30);
+    color: #acacac;
+    font-weight: 500;
 }
 .chat__input > input:focus{
     outline: none;
+}
+.chat__input > input[type="text"]{
+        caret-color: #acacac;
+}
+.chat__input > input::placeholder {
+    color: #acacac;
+    font-weight: 500;
 }
 .messages{
     margin: 10px 0 10px 0;
@@ -79,10 +98,10 @@ video{
     margin: 10px;
 }
 .message{
-    color: white;
+    color: #FFFFFF;
     list-style-type: none;
     width: fit-content;
-    background-color: #3874e3;
+    background-color: #0372c9;
     border-radius: 10px;
     padding: 5px 10px 5px 10px;
     font-size: 12px;
@@ -114,8 +133,12 @@ video{
     background-color: rgb(192, 13, 13);
 }
 #video__mute:hover, #video__stop:hover, #video__shareScreen:hover, #video__chat:hover{
-    background-color: rgb(97, 97, 97);    
+    background-color: rgb(97, 97, 97);   
+    cursor: pointer; 
 }
 #video__disconnect:hover{
     background-color: rgb(216, 21, 21);
+}
+.fa-solid{
+    font-size: 20px
 }
