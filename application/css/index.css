@@ -120,7 +120,7 @@ video{
     background-color: rgb(22, 22, 22);
 }
 
-#video__mute, #video__stop, #video__shareScreen, #video__chat, #video__disconnect{
+#video__record, #video__record__resume, #video__record__pause, #video__record__stop, #video__mute, #video__stop, #video__shareScreen, #video__chat, #video__disconnect{
     height: 50px;
     width: 100px;
     border-radius: 20px;
@@ -132,12 +132,13 @@ video{
 #video__disconnect{
     background-color: rgb(192, 13, 13);
 }
-#video__mute:hover, #video__stop:hover, #video__shareScreen:hover, #video__chat:hover{
+#video__record:hover, #video__record__resume:hover, #video__record__pause:hover, #video__record__stop:hover, #video__mute:hover, #video__stop:hover, #video__shareScreen:hover, #video__chat:hover{
     background-color: rgb(97, 97, 97);   
     cursor: pointer; 
 }
 #video__disconnect:hover{
     background-color: rgb(216, 21, 21);
+    cursor: pointer; 
 }
 .fa-solid{
     font-size: 20px

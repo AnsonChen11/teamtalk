@@ -37,9 +37,9 @@ io.on("connection", socket => {
             io.to(roomId).emit("createMessage", message, userId);
         })
 
-        socket.on("finishedScreenStream", (video) => {
-            socket.broadcast.to(roomId).emit("removeScreenStream", video);
-            console.log("發送removeScreenStream事件", video)
+        socket.on("finishedScreenStream", (screenStream) => {
+            socket.broadcast.to(roomId).emit("removeScreenStream", screenStream);
+            console.log("發送removeScreenStream事件", screenStream)
         })
     })
 });

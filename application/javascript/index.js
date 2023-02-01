@@ -1,3 +1,5 @@
+
+/*-------------------------------socket連線到伺服器----------------------------------------------*/
 const socket = io.connect("/", {secure: true});
 // const socket = io("/");
 console.log("connect to socket")
@@ -15,6 +17,7 @@ myVideo.muted = true;
 //     debug: 3
 // });
 
+/*-------------------------------初始化peer連線----------------------------------------------*/
 let myPeer = new Peer({
     secure: true
 });
@@ -23,13 +26,13 @@ let myVideoStream;
 let roomId;
 let roomIdUrl = window.location.pathname;
 const peers = {}
-
+/*-------------------------------peer打開連線----------------------------------------------*/
 myPeer.on("open", userId => { //myPeer物件成功連接到伺服器時觸發，並會從伺服器端獲取一個唯一的 ID
     roomId = roomIdUrl.match(/([^/]+)$/)[0];
     socket.emit("joinRoom", roomId, userId);
 });
     
-//瀏覽器使用 getUserMedia API 獲取使用者的視訊和音訊流
+/*-------------------------------利用getUserMedia獲得使用者的音視訊串流----------------------------------------------*/
 navigator
     .mediaDevices
     .getUserMedia(constraints)
@@ -37,7 +40,7 @@ navigator
         myVideoStream = stream;
         addVideoStream(myVideo, stream);
         console.log("獲得stream授權")
-        //新成員收到連接請求後，會發出 "call" 事件，並回答通話
+        /*-------------------------------監聽是否有新成員收到連接請求，若有責會發出"call"事件，並回答通話(call.answer)----------------------------------------------*/
         myPeer.on("call", call => { //其他 myPeer物件向該myPeer發出呼叫時觸發。呼叫時，其他myPeer物件會建立一個call物件
             console.log('someone call me');
             if(call.metadata.type === "screen-sharing"){ //此為分享畫面的串流，做特殊處理
@@ -58,6 +61,7 @@ navigator
                 })
             }
         })
+        /*-------------------------------監聽使用者連線----------------------------------------------*/
         socket.on("userConnected", (userId) => {
             connectToNewUser(userId, stream);
         })
@@ -66,7 +70,7 @@ navigator
         console.log("Error accessing media devices.", error)
     })
 
-
+/*-------------------------------加入音視訊顯示於畫面上----------------------------------------------*/
 function addVideoStream(video, userVideoStream){
     try{
         video.srcObject = userVideoStream;
@@ -83,7 +87,7 @@ function addVideoStream(video, userVideoStream){
 }
 
 
-//建立一個 myPeer.connect 到新成員的 myPeer。
+/*-------------------------------建立peer.connect到新成員的peer----------------------------------------------*/
 function connectToNewUser(userId, stream){
     console.log('I call someone' + userId);
     const call = myPeer.call(userId, stream, {metadata: {type: "join-room"}}); //加入type判斷是屬於哪種類型的媒體串流
@@ -101,7 +105,7 @@ function connectToNewUser(userId, stream){
     peers[userId] = call
     console.log(peers, userId, call)
 }
-
+/*-------------------------------監聽使用者離線----------------------------------------------*/
 socket.on("userDisconnected", (userId) => {
     try{
         console.log(peers[userId])
@@ -114,6 +118,11 @@ socket.on("userDisconnected", (userId) => {
     }
 })
 
+/*-------------------------------控制按鈕----------------------------------------------*/
+const videoRecord = document.getElementById("video__record");
+const videoRecordResume = document.getElementById("video__record__resume");
+const videoRecordPause = document.getElementById("video__record__pause");
+const videoRecordStop = document.getElementById("video__record__stop");
 const audioMute = document.getElementById("video__mute");
 const videoStop = document.getElementById("video__stop");
 const shareScreen = document.getElementById("video__shareScreen");
@@ -124,20 +133,8 @@ const sectionVideo = document.querySelector(".section__video");
 const controlsVideo = document.querySelector(".controls__video");
 
 
-chatToggle.addEventListener("click", () => {
-    if(sectionChat.style.display === "none") {
-        sectionChat.style.display = "block";
-        sectionVideo.style.width = "75%";
-        controlsVideo.style.width = "75%";
-        sectionChat.style.width = "25%";
-    }
-    else{
-        sectionChat.style.display = "none";
-        sectionVideo.style.width = "100%";
-        controlsVideo.style.width = "100%";
-    }
-});
 
+/*-------------------------------控制音訊開關----------------------------------------------*/
 audioMute.addEventListener("click", () => {
     const audioTrack = myVideoStream.getAudioTracks()[0]; 
     const audioIcon = document.querySelector(".fa-microphone")
@@ -155,7 +152,7 @@ audioMute.addEventListener("click", () => {
         audioSlashIcon.style.display = "none";
     }
 })
-
+/*-------------------------------控制視訊開關----------------------------------------------*/
 videoStop.addEventListener("click", () => {
     const videoTrack = myVideoStream.getVideoTracks()[0]; 
     const videoIcon = document.querySelector(".fa-video")
@@ -173,7 +170,7 @@ videoStop.addEventListener("click", () => {
         videoSlashIcon.style.display = "none";
     }
 })
-
+/*-------------------------------分享螢幕畫面----------------------------------------------*/
 shareScreen.addEventListener("click", () => {
     try{
         navigator
@@ -220,10 +217,21 @@ socket.on("removeScreenStream", (video) => {
     console.log("移除新的video")
 })
 
-// disconnect.addEventListener("click", () => {
-//     console.log("Disconnect")
-//     myPeer.close
-// })
+
+/*-------------------------------聊天室----------------------------------------------*/
+chatToggle.addEventListener("click", () => {
+    if(sectionChat.style.display === "none") {
+        sectionChat.style.display = "block";
+        sectionVideo.style.width = "75%";
+        controlsVideo.style.width = "75%";
+        sectionChat.style.width = "25%";
+    }
+    else{
+        sectionChat.style.display = "none";
+        sectionVideo.style.width = "100%";
+        controlsVideo.style.width = "100%";
+    }
+});
 
 const chatInput = document.getElementById("chat__input");
 chatInput.addEventListener("keydown", (e) => {
@@ -237,3 +245,74 @@ const messagesBorder = document.querySelector(".messagesBorder");
 socket.on("createMessage", (message, userId) => {
     messagesBorder.innerHTML = messagesBorder.innerHTML + `<div class="messages"><li class="user">${userId}</li><li class="message">${message}</li></div>`;
 });
+
+/*-------------------------------螢幕錄影----------------------------------------------*/
+videoRecord.addEventListener("click", async() => {
+    const screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+        video: true,
+        displaySurface: "screen" 
+    });
+
+    const options = {
+        mimeType: "video/webm; codecs=vp9",
+    };
+
+    mediaRecorder = new MediaRecorder(screenStream, options);
+    console.log(mediaRecorder)
+    console.log(mediaRecorder.state)
+    const chunks = [];
+    videoRecord.style.display = "none";
+    videoRecordPause.style.display = "block";
+    videoRecordStop.style.display = "block";
+    videoRecordController(mediaRecorder)
+    mediaRecorder.start(1000);
+    mediaRecorder.addEventListener("dataavailable", (event) => {
+        chunks.push(event.data);
+        console.log(chunks);
+    });
+
+    videoRecordStop.addEventListener("click", () => {
+        console.log("停止錄製")
+        mediaRecorder.stop();
+        const recordedBlob = new Blob(chunks, { type: "video/webm; codecs=vp9" });
+        const recordedUrl = URL.createObjectURL(recordedBlob);
+        const a = document.createElement("a");
+        let fileName = "teamtalk_recording_" + Date.now() + ".webm"
+        a.href = recordedUrl;
+        a.download = fileName;
+        a.click();
+        videoRecord.style.display = "block";
+        videoRecordPause.style.display = "none";
+        videoRecordStop.style.display = "none";
+    });
+})
+
+function videoRecordController(mediaRecorder){
+    videoRecordPause.addEventListener("click", () => {
+        if(mediaRecorder.state === "recording"){
+            mediaRecorder.pause();
+            videoRecordPause.innerHTML = '<i class="fa-solid fa-play"></i><div>Resume</div>'
+            console.log("暫停錄製")
+        }
+        else if(mediaRecorder.state === "paused"){
+            mediaRecorder.resume();
+            videoRecordPause.innerHTML = '<i class="fa-solid fa-pause"></i><div>Pause</div>'
+            console.log("正在錄製")
+        }
+    });
+    
+    // videoRecordResume.addEventListener("click", () => {
+    //     if(mediaRecorder.state === "paused"){
+    //         mediaRecorder.resume();
+    //         videoRecordResume.style.display = "none";
+    //         videoRecordPause.style.display = "block"; 
+    //         console.log("正在錄製")
+    //     };
+    // });
+}
+
+/*-------------------------------結束通話----------------------------------------------*/
+// disconnect.addEventListener("click", () => {
+//     console.log("Disconnect")
+//     myPeer.close
+// })
