@@ -5,44 +5,30 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="/css/index.css">
-    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
     <script src="https://kit.fontawesome.com/0145397512.js" crossorigin="anonymous"></script>
     <title>TeamTalk</title>
 </head>
 <body>
-    <!-- <nav>
-        <div>TeamTalk</div>
-    </nav> -->
-    <main>
-        <div class="section__video">
-            <div class="video__container">
-                <div id="video-grid"></div>
-            </div>
-            <div class="controls__video">
-                <button id="video__mute"><i class="fa-solid fa-microphone"></i><i class="fa-solid fa-microphone-slash" style="display:none;"></i><div>Audio</div></button>
-                <button id="video__stop"><i class="fa-solid fa-video"></i><i class="fa-solid fa-video-slash" style="display:none;"></i><div>Video</div></button>
-                <button id="video__record"><i class="fa-solid fa-record-vinyl"></i><div>Record</div></button>
-                <button id="video__record__resume" style="display:none;"><i class="fa-solid fa-play"></i><div>Resume</div></button>
-                <button id="video__record__pause" style="display:none;"><i class="fa-solid fa-pause"></i><div>Pause</div></button>
-                <button id="video__record__stop" style="display:none;"><i class="fa-solid fa-stop"></i><div>Stop</div></button>
-                <button id="video__shareScreen"><i class="fa-solid fa-display"></i><div>ScreenSharing</div></button>
-                <button id="video__chat"><i class="fa-solid fa-comment"></i><div>Chat</div></button>
-                <button id="video__disconnect"><i class="fa-solid fa-phone-slash"></i><div>Disconnect</div></button>
-            </div>
+    <nav>
+        <div class="siteTitle">TeamTalk</div>
+        <div class="auth">
+            <div class="loginBtn"><i class="fa-solid fa-user"><span></i>Log in</div>
+            <div class="signinBtn">Sign up</div>
         </div>
-        <div class="section__chat" id="section__chat" style="display:none;">
-            <div class="chat__header">ChatRoom</div>
-            <div class="chat__window">
-                <ul class="messagesBorder">
-                </ul>
+    </nav>
+    <main>
+        <div class="main__top">
+            <div class="main__begin">
+                <div class="main__intro">One app for everything.<br>And everyone.</div>
+                <div class="main__intro__sub">Bring teams together, reimagine workspaces, engage new audiences, and delight your customers — all on the TeamTalk platform you know and love !</div>
+                <div class="main__launch">
+                    <button id="launchMeeting">New meeting</button>
+                    <input id="inputRoomCode" placeholder="Enter a room code">
+                </div>
             </div>
-            <div class="chat__input">
-                <input type="text" id="chat__input" placeholder="Send a message to everyone !">
-            </div>
+            <div class="main__pic"><img src="/images/main__pic.png"></div>
         </div>
     </main>
-    <script src="/socket.io/socket.io.js"></script>
     <script src="/javascript/index.js"></script>
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 </body>
 </html>

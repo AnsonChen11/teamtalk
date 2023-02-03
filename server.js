@@ -1,9 +1,5 @@
-const express = require("express")
-const path = require("path");
-const hbs = require("hbs");
 const PORT = 5000
-const app = express()
-
+const app = require("./middleware/app");
 const http = require("http")
 const server = http.createServer(app)
 const io = require("socket.io")(server);
@@ -12,6 +8,7 @@ const peerServer = ExpressPeerServer(server, {
     debug: true 
 });
 const { v4: uuidV4 } = require("uuid")
+
 
 app.use("/peerjs", peerServer);
 
@@ -32,7 +29,6 @@ io.on("connection", socket => {
             console.log("userDisconnected事件", userId)
         })
 
-
         socket.on("chatMessage", (message) => {
             io.to(roomId).emit("createMessage", message, userId);
         })
@@ -44,21 +40,10 @@ io.on("connection", socket => {
     })
 });
 
-
-//設定模板引擎
-app.engine("html", hbs.__express)
-//設定模板位置
-app.set("views", path.join(__dirname, "application", "views"))
-//設定靜態檔位置
-app.use(express.static(path.join(__dirname, "application")))
-//使用.render回傳html位置
-app.get('/', (req, res) => {
-    res.redirect(`/${uuidV4()}`)
-})
-app.get("/:room" , (req, res) => {
-    res.render("index.html", { roomId: req.params.room })
+app.post("/newMeeting", (req, res) => {
+    const roomId = uuidV4();
+    res.redirect(`/room/${roomId}`);
 });
-app.set("view engine", "hbs")
 
 server.listen(PORT, () => {
     console.log(`Express is listening on localhost:${PORT}`)
