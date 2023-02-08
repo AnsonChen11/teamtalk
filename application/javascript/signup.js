@@ -3,6 +3,7 @@ const signupEmail = document.getElementById("signup_email");
 const signupPassword = document.getElementById("signup_password");
 const createAccount = document.querySelector(".createAccount");
 const passwordHint = document.querySelector(".hint");
+const linkToLoginPage = document.querySelector(".linkToLoginPage");
 
 signupUsername.addEventListener("input", toggleCreateAccount);
 signupEmail.addEventListener("input", toggleCreateAccount);
@@ -12,8 +13,13 @@ signupUsername.addEventListener("input", checkUsernameInputIsValid);
 signupEmail.addEventListener("input", checkEmailInputIsValid);
 signupPassword.addEventListener("input", checkPasswordInputIsValid);
 
+linkToLoginPage.addEventListener("click", () => {
+    window.location.href = "/users/login";
+})
+
 /*----------------------------------controlling submit button open or not ----------------------------------*/
-window.onload = function () {
+window.onload = function(){
+    // console.log(location.search)
     if(signupUsername.value === "" || signupEmail.value === "" || signupPassword.value === ""){
         createAccount.style.opacity = "0.3";
         createAccount.style.cursor = "default";
@@ -23,8 +29,8 @@ window.onload = function () {
         createAccount.style.opacity = "1";
         createAccount.style.cursor = "pointer";
         createAccount.style.pointerEvents = "auto";
-    }
-  };
+    };
+};
 
 function toggleCreateAccount(){
     if(checkUsernameInputIsValid() === true && checkEmailInputIsValid() === true && checkPasswordInputIsValid() === true){
@@ -36,8 +42,8 @@ function toggleCreateAccount(){
         createAccount.style.opacity = "0.3";
         createAccount.style.cursor = "default";
         createAccount.style.pointerEvents = "none";
-    }
-}
+    };
+};
 
 /*----------------------------------hint of check input value valid----------------------------------*/
 function checkUsernameInputIsValid(){
@@ -50,8 +56,8 @@ function checkUsernameInputIsValid(){
     else{
         signupUsername.style.borderColor = "rgb(104, 201, 104)";
         return true;
-    }
-}
+    };
+};
 
 function checkEmailInputIsValid(){
     if(signupEmail.value === ""){
@@ -63,8 +69,8 @@ function checkEmailInputIsValid(){
     else{
         signupEmail.style.borderColor = "rgb(104, 201, 104)";
         return true;
-    }
-}
+    };
+};
 
 function checkPasswordInputIsValid(){
     if(signupPassword.value === ""){
@@ -79,9 +85,8 @@ function checkPasswordInputIsValid(){
         signupPassword.style.borderColor = "rgb(104, 201, 104)";
         passwordHint.style.display = "none";
         return true;
-    }
-}
-
+    };
+};
 
 /*----------------------------------check input value match Rex----------------------------------*/
 function checkUsernameRex(username){
@@ -90,7 +95,7 @@ function checkUsernameRex(username){
       return false;
     }
     return true;
-}
+};
 
 function checkEmailRex(email){
     const regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -98,8 +103,7 @@ function checkEmailRex(email){
       return false;
     }
     return true;
-}
-
+};
 
 function checkPasswordRex(password){
     const regex = /^[a-zA-Z0-9_]+$/;
@@ -110,9 +114,42 @@ function checkPasswordRex(password){
       return false;
     }
     return true;
-}
+};
+/*----------------------------------submit user's input to server----------------------------------*/
+createAccount.addEventListener("click", () => {
+    const headers = {
+        "Content-Type": "application/json"
+    };
+    const body = {
+        "username": signupUsername.value,
+        "email": signupEmail.value,
+        "password": signupPassword.value
+    };
+    fetch("/users/signup", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(body)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data)
+        if(data.message === "Email already exists"){
+            alert("Email already exists")
+            return
+        }
 
-
+        else if(data.message === "Signup successfully"){
+            alert("Signup successfully Please login")
+            window.location.href = "/login";
+        }
+        else{
+            alert("Error message:", data)
+        }
+    })
+    .catch(err => {
+        console.error(err);
+    })
+})
 
 
 // else if(!checkUsername(name)){

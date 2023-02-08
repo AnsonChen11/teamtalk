@@ -1,4 +1,4 @@
-
+authentication()
 /*-------------------------------socket連線到伺服器----------------------------------------------*/
 const socket = io.connect("/", {secure: true});
 // const socket = io("/");
@@ -24,11 +24,14 @@ let myPeer = new Peer({
 console.log("connect to peer")
 let myVideoStream;
 let roomId;
+let username
 let roomIdUrl = window.location.pathname;
 const peers = {}
 /*-------------------------------peer打開連線----------------------------------------------*/
 myPeer.on("open", userId => { //myPeer物件成功連接到伺服器時觸發，並會從伺服器端獲取一個唯一的 ID
     roomId = roomIdUrl.match(/([^/]+)$/)[0];
+    // userId += `__${username}`
+    console.log(userId)
     socket.emit("joinRoom", roomId, userId);
 });
     
@@ -308,3 +311,46 @@ disconnect.addEventListener("click", () => {
     console.log("Disconnect")
     window.location.href = "/"
 })
+
+/*-------------------------------驗證使用者----------------------------------------------*/
+async function authentication(){
+    let token = getCookie("token"); // 取得cookie中的token
+    if(!token){
+		alert("請先登入")
+        window.location.href = "/";
+        return
+    }
+    try{
+		await fetch("/users/auth", {
+            method: "GET",
+			headers: {
+				"Authorization": `Bearer ${token}`
+			}
+        })
+        .then(response => {
+            if(!response.ok){
+			    alert("請先登入")
+			    window.location.href = "/";
+		    }
+            return response.json()
+        })
+        .then(data => {
+            username = data.username;
+            // accountProfileEmail.textContent = data.email;
+            // accountBtn.textContent = data.username[0].toUpperCase()
+        })
+    }
+    catch(error){
+		alert("請先登入")
+        window.location.href = "/";
+    }
+}
+
+function getCookie(key) {
+	let value = "; " + document.cookie;
+	let parts = value.split("; " + key + "=");
+	if(parts.length === 2){
+		return parts.pop().split(";").shift();
+	}
+}
+  

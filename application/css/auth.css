@@ -53,19 +53,43 @@ main{
 
 .substitle{
     font-size: 35px;
-    padding: 30px;
+    padding: 10px 30px 0 30px;
 }
 
-.signUp__container{
+.containerOfHint{
+    display: flex;
+    font-size: 14px;
+}
+
+.hintToCreateAccount, .hintToLogin{
+    color: rgb(175, 175, 175);
+}
+
+.linkToSignupPage, .linkToLoginPage{
+    padding-left: 5px;
+    color: rgb(37, 118, 232);
+}
+
+.linkToSignupPage:hover, .linkToLoginPage:hover{
+    color: rgb(7, 112, 172);
+    cursor: pointer;
+}
+
+.signUp__container, .login__container{
+    margin-top: 30px;
     background-color: rgb(247, 247, 247);
     border-radius: 10px;
     width: 500px;
-    height: 350px;
+    /* height: 350px; */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+.signUp__area, .login__area{
+    padding: 40px;
 }
 
 .user__info{
@@ -100,7 +124,7 @@ main{
     display: none;
 }
 
-.createAccount{
+.createAccount, .loginBtn{
     width: 300px;
     height: 50px;
     border-radius: 10px;
@@ -109,7 +133,7 @@ main{
     border: none;
 }
 
-.createAccount:hover{
+.createAccount:hover, .loginBtn:hover{
     cursor: pointer;
     box-shadow: 2px 2px 2px 1px rgba(20, 20, 110, 0.3);;
     background-color: rgb(19, 19, 160);

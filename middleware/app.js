@@ -6,10 +6,15 @@ const cors = require("cors");
 const session = require("express-session");
 const flash = require("connect-flash");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
 const { connectToMongoDB } = require("../utils/db.js")
 const roomRoutes = require("../routes/roomRoutes");
+const signupRoutes = require("../routes/signupRoutes");
+const loginRoutes = require("../routes/loginRoutes");
 const authRoutes = require("../routes/authRoutes");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const app = express();
 
@@ -19,8 +24,15 @@ app.set("views", path.join(__dirname, "../application", "views"));
 app.use(express.static(path.join(__dirname, "../application")));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(session({
+    secret: process.env.session_serect, // 用來加密 session ID 的字串
+    resave: false,
+    saveUninitialized: true,
+}));
 
 app.use("/", roomRoutes);
+// app.use("/", signupRoutes);
+// app.use("/", loginRoutes);
 app.use("/", authRoutes);
 
 connectToMongoDB();
@@ -29,16 +41,12 @@ app.get("/", (req, res) => {
     res.render("index");
 })
 
+
+
 module.exports = app;
 
 
 // app.set('trust proxy', 1)
-// app.use(session({
-//   secret: 'keyboard cat',
-//   resave: false,
-//   saveUninitialized: true,
-//   // cookie: { secure: true }
-// }))
 
 // app.use(flash());
 
