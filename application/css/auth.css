@@ -59,6 +59,7 @@ main{
 .containerOfHint{
     display: flex;
     font-size: 14px;
+    margin-top: 5px;
 }
 
 .hintToCreateAccount, .hintToLogin{

@@ -140,7 +140,7 @@ createAccount.addEventListener("click", () => {
 
         else if(data.message === "Signup successfully"){
             alert("Signup successfully Please login")
-            window.location.href = "/login";
+            window.location.href = "/users/login";
         }
         else{
             alert("Error message:", data)

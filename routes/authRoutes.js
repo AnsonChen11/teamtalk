@@ -5,7 +5,8 @@ const signupController = require("../controllers/signupController");
 const router = express.Router();
 
 router
-    .get("/users/auth", authController.authenticateUser)
+    .get("/users/auth", authController.authenticateUser, authController.getUserInformation)
+    .put("/users/auth", authController.authenticateUser, authController.editAccountUsername)
     .get("/users/login", loginController.getLoginPage)
     .post("/users/login", loginController.loginAccount)
     .get("/users/signup", signupController.getSignupPage)

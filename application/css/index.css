@@ -17,6 +17,7 @@ nav{
     height: 50px;
     justify-content: space-between;
     align-items: center;
+    position: relative;
 }
 .siteTitle{
     color: rgb(34, 34, 115);
@@ -65,7 +66,7 @@ nav{
 	height: 40px;
     border-radius: 50%;
     color: rgb(255, 255, 255);
-    background-color: rgb(28, 39, 145);
+    background-color: rgb(34, 34, 115);
     position: relative;
 }
 
@@ -80,7 +81,7 @@ nav{
     box-shadow: 1px 1px 1px 2px rgba(0, 0, 0, 0.2);
     width: 300px;
     position: absolute;
-    top: 70px;
+    top: 50px;
     font-size: 16px;
 }
 
@@ -126,6 +127,154 @@ nav{
 
 .textItem, .account__profile__info{
     margin-left: 28px;
+}
+
+.account__edit{
+    background-color: rgb(255, 255, 255);
+    width: 400px;
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translate(-50%, 0);
+    border-radius: 10px;
+    z-index: 1;
+    box-sizing: border-box;
+    padding: 20px 30px 30px 30px;
+}
+
+.account__edit__nav{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.account__edit__close{
+    position: absolute;
+    left: 325px;
+}
+
+.account__edit__close:hover{
+    cursor: pointer;
+    color: rgb(148, 148, 148);
+}
+
+.account__edit__title{
+    border-bottom: 2px solid rgb(221, 220, 220);
+    margin-top: 20px;
+    font-size: 16px;
+    color: rgb(116, 117, 117);
+}
+
+.username__edit__section{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 16px;
+    margin-top: 5px;
+}
+
+.username__edit__input{
+    border-radius: 5px;
+    box-sizing: border-box;
+    padding-left: 6px;
+    border: 2px solid rgb(234, 234, 234);
+}
+
+.username__edit__input:focus {
+    outline: none;
+    border: 2px solid rgb(147, 182, 247);
+}
+
+.username__edit__icon:hover{
+    cursor: pointer;
+    color: rgb(148, 148, 148);
+}
+
+.username__edit__options{
+    align-items: center;
+    padding-right: 3px;
+}
+
+.username__edit__check{
+    color: rgb(33, 174, 33);
+    margin-right: 15px;
+}
+
+.username__edit__check:hover{
+    cursor: pointer;
+    color: rgb(34, 226, 53);
+}
+
+.username__edit__cancel{
+    color: rgb(174, 33, 33);
+}
+
+.username__edit__cancel:hover{
+    cursor: pointer;
+    color: rgb(226, 34, 34);
+}
+
+.profilePicture__section{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.profilePicture__edit{
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background-color: rgb(252, 192, 233);
+    overflow: hidden;
+    border-style: none;
+}
+
+.profilePicture__edit:hover{
+    cursor: pointer;
+}
+
+.profilePicture__edit img{
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}
+
+.profilePicture__edit__options{
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin-top: 30px;
+}
+
+.profilePicture__edit__change, .profilePicture__edit__remove{
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 150px;
+    height: 40px;
+    border-radius: 5px;
+    border: 1px solid rgb(209, 208, 208);
+}
+
+.profilePicture__edit__change:hover, .profilePicture__edit__remove:hover{
+    background-color: rgba(235, 235, 235, 0.488);
+    cursor: pointer;
+}
+
+.profilePicture__edit__icon{
+    margin-right: 10px;
+}
+
+.overlay{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(32,33,36,.6)
 }
 
 .main__top{
