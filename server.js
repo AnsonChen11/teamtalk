@@ -17,7 +17,7 @@ io.on("connection", socket => {
         console.log(userId, username, "加入房間", roomId)
         socket.join(roomId);
         setTimeout(()=>{
-            socket.broadcast.to(roomId).emit("userConnected", userId);
+            socket.broadcast.to(roomId).emit("userConnected", userId, username);
         }, 1000);
         console.log("userConnected事件", userId)
 

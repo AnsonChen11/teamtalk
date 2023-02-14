@@ -123,7 +123,8 @@ createAccount.addEventListener("click", () => {
     const body = {
         "username": signupUsername.value,
         "email": signupEmail.value,
-        "password": signupPassword.value
+        "password": signupPassword.value,
+        "defaultPictureData": createDefaultPictureData(signupUsername.value)
     };
     fetch("/users/signup", {
         method: "POST",
@@ -150,6 +151,39 @@ createAccount.addEventListener("click", () => {
         console.error(err);
     })
 })
+
+/*--------------------Canvas API to generate avatar--------------------*/
+function createDefaultPictureData(username){
+    const canvas = document.createElement("canvas");
+    canvas.width = 600;
+    canvas.height = 400;
+    const ctx = canvas.getContext("2d");
+
+    // 產生隨機背景顏色
+    const setBackgroundColor  = () => {
+        let h = Math.floor(Math.random() * 360);
+        let s = Math.floor(Math.random() * 50) + 50; // 產生 50% ~ 100% 的飽和度
+        let l = Math.floor(Math.random() * 25) + 25; // 產生 25% ~ 50% 的亮度
+        let backgroundColor =  `hsl(${h}, ${s}%, ${l}%)`
+        return backgroundColor
+    };
+
+    ctx.fillStyle = setBackgroundColor();
+    ctx.fillRect(0, 0, 600, 400);
+
+    // 文字
+    ctx.font = "48px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "white";
+    ctx.fillText(username[0].toUpperCase(), 300, 220);
+
+    const defaultPictureData  = canvas.toDataURL();
+    console.log(defaultPictureData);
+    // const img = new Image();
+    // img.src = avatarData;
+    // document.body.appendChild(img);
+    return defaultPictureData 
+}
 
 
 // else if(!checkUsername(name)){

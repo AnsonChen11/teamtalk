@@ -179,6 +179,7 @@ nav{
     box-sizing: border-box;
     padding-left: 6px;
     border: 2px solid rgb(234, 234, 234);
+    width: 280px
 }
 
 .username__edit__input:focus {
@@ -226,19 +227,19 @@ nav{
     width: 250px;
     height: 250px;
     border-radius: 50%;
-    background-color: rgb(252, 192, 233);
+    background-color: rgb(238 238 238);
     overflow: hidden;
     border-style: none;
-}
-
-.profilePicture__edit:hover{
-    cursor: pointer;
 }
 
 .profilePicture__edit img{
     object-fit: cover;
     height: 100%;
     width: 100%;
+}
+
+.file-uploader:hover{
+    cursor: pointer;
 }
 
 .profilePicture__edit__options{
@@ -248,7 +249,7 @@ nav{
     margin-top: 30px;
 }
 
-.profilePicture__edit__change, .profilePicture__edit__remove{
+.profilePicture__edit__change, .profilePicture__edit__remove, .profilePicture__edit__cancel{
     font-size: 14px;
     display: flex;
     justify-content: center;
@@ -259,7 +260,7 @@ nav{
     border: 1px solid rgb(209, 208, 208);
 }
 
-.profilePicture__edit__change:hover, .profilePicture__edit__remove:hover{
+.profilePicture__edit__change:hover, .profilePicture__edit__remove:hover, .profilePicture__edit__cancel:hover{
     background-color: rgba(235, 235, 235, 0.488);
     cursor: pointer;
 }

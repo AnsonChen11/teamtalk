@@ -4,6 +4,7 @@ const signupBtn = document.querySelector(".signupBtn");
 const launchMeeting = document.getElementById("launchMeeting");
 const inputRoomCode = document.getElementById("inputRoomCode");
 const accountBtn = document.querySelector(".accountBtn");
+const accountBtnImg = document.querySelector(".accountBtnImg");
 const accountDropdown = document.querySelector(".account__dropdown");
 const accountHostMeeting = document.querySelector(".account__hostMeeting");
 const accountLogout = document.querySelector(".account__logout");
@@ -18,6 +19,9 @@ const usernameEditOptions = document.querySelector(".username__edit__options");
 const usernameEditInput = document.querySelector(".username__edit__input");
 const usernameEditCheck = document.querySelector(".username__edit__check");
 const usernameEditCancel = document.querySelector(".username__edit__cancel");
+const profilePic = document.querySelector(".profile_pic")
+const profilePictureEditRemove = document.querySelector(".profilePicture__edit__remove")
+const profilePictureEditCancel = document.querySelector(".profilePicture__edit__cancel")
 const overlay = document.querySelector(".overlay");
 
 let username;
@@ -41,14 +45,18 @@ async function authenticationForIndex(){
             return response.json()
         })
         .then(data => {
+            console.log(data)
             loginBtn.style = "display: none";
             signupBtn.style = "display: none";
             accountBtn.style = "display:flex";
             accountProfileUsername.textContent = data.username;
             accountProfileEmail.textContent = data.email;
             accountBtn.textContent = data.username[0].toUpperCase()
+            // accountBtnImg.src = data.pictureUrl
             usernameEditName.textContent = data.username;
             username = data.username;
+            profilePic.src = data.pictureUrl
+            declineProfilePic(data.pictureUrl)
         })
     }
     catch(error){
@@ -159,6 +167,132 @@ usernameEditCheck.addEventListener("click", () => {
     }
 });
 
+async function editUsername(newUsername){
+    let token = getCookie("token"); 
+    if(!token){
+        return
+    }
+    try{
+        await fetch("/users/auth", {
+            method: "PUT",
+			headers: {
+                "Content-Type": "application/json",
+				"Authorization": `Bearer ${token}`
+			},
+            body: JSON.stringify({ newUsername })
+        })
+        .then(response => {
+            if(!response.ok){
+			    return
+		    }
+            return response.json()
+        })
+        .then(data => {
+            const updateToken  = data.updateToken;
+            document.cookie = `token=${updateToken}`;
+            location.reload();
+        })
+    }
+    catch(error){
+		return
+    }
+}
+/*----------------------------------edit profile picture addEventListener event----------------------------------*/
+const fileUploader = document.querySelector("#file-uploader")
+fileUploader.addEventListener("change", (e) => {
+    let file = e.target.files[0];
+    if(file){
+       profilePic.src = URL.createObjectURL(file)
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+    upload(formData)
+});
+function declineProfilePic(data){
+    profilePictureEditRemove.addEventListener("click", () => {
+        profilePictureEditRemove.style.display = "none";
+        profilePictureEditCancel.style.display = "flex";
+    
+        profilePictureEditCancel.addEventListener("click", () => {
+            profilePictureEditRemove.style.display = "flex";
+            profilePictureEditCancel.style.display = "none";
+            profilePic.src = data
+        })
+        let file = createDefaultPictureBlob(usernameEditName.textContent);
+        profilePic.src = URL.createObjectURL(file);
+        const formData = new FormData();
+        formData.append("file", file);
+        // upload(formData)
+    })
+}
+
+
+function upload(formData){
+    const profilePictureEditChange = document.querySelector(".profilePicture__edit__change");
+    profilePictureEditChange.addEventListener("click", (e) => {
+        let token = getCookie("token"); 
+        if(!token){
+            return
+        }
+        fetch("/users/auth", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                },
+                body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+                console.log(data)
+                if(data.message === "ok"){
+                    alert("Upload successfully")
+                    // profilePic.src = data.updatedPictureUrl
+                    location.reload()
+                }
+        })
+        .catch(error => {
+                console.log("error", error)
+        })
+    })
+}
+
+
+function createDefaultPictureBlob(username){
+    const canvas = document.createElement("canvas");
+    canvas.width = 600;
+    canvas.height = 400;
+    const ctx = canvas.getContext("2d");
+
+    // 產生隨機背景顏色
+    const setBackgroundColor  = () => {
+        let h = Math.floor(Math.random() * 360);
+        let s = Math.floor(Math.random() * 50) + 50; // 產生 50% ~ 100% 的飽和度
+        let l = Math.floor(Math.random() * 25) + 25; // 產生 25% ~ 50% 的亮度
+        let backgroundColor =  `hsl(${h}, ${s}%, ${l}%)`
+        return backgroundColor
+    };
+
+    ctx.fillStyle = setBackgroundColor();
+    ctx.fillRect(0, 0, 600, 400);
+
+    // 文字
+    ctx.font = "144px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "white";
+    ctx.fillText(username[0].toUpperCase(), 300, 250);
+
+    const defaultPictureData  = canvas.toDataURL();
+    const byteString = atob(defaultPictureData.split(",")[1]);
+    const mimeString = defaultPictureData.split(",")[0].split(":")[1].split(";")[0];
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const intArray = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < byteString.length; i++) {
+        intArray[i] = byteString.charCodeAt(i);
+    }
+    console.log(defaultPictureData);
+    // return (defaultPictureData)
+    return new Blob([arrayBuffer], { type: mimeString });
+}
 /*----------------------------------launch and join meeting addEventListener event----------------------------------*/
 launchMeeting.addEventListener("click", () => {
     fetch("/newMeeting", { method: "POST" })
@@ -198,35 +332,4 @@ function getCookie(key) {
 	if(parts.length === 2){
 		return parts.pop().split(";").shift();
 	}
-}
-
-async function editUsername(newUsername){
-    let token = getCookie("token"); 
-    if(!token){
-        return
-    }
-    try{
-        await fetch("/users/auth", {
-            method: "PUT",
-			headers: {
-                "Content-Type": "application/json",
-				"Authorization": `Bearer ${token}`
-			},
-            body: JSON.stringify({ newUsername })
-        })
-        .then(response => {
-            if(!response.ok){
-			    return
-		    }
-            return response.json()
-        })
-        .then(data => {
-            const updateToken  = data.updateToken;
-            document.cookie = `token=${updateToken}`;
-            location.reload();
-        })
-    }
-    catch(error){
-		return
-    }
 }

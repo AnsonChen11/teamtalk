@@ -21,12 +21,16 @@ const UserSchema = new mongoose.Schema({
         //     validator: passwordValidator
         // }
     },
+    pictureFileName: {
+        type: String,
+    },
     createdDate: {
         type: Date,
-        default: Date.now
+        default: Date.now,
     },
     updatedAt: { 
-        type: Date, default: Date.now 
+        type: Date, 
+        default: Date.now,
     }
 });
 

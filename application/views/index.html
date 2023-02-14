@@ -14,7 +14,7 @@
         <div class="auth">
             <div class="loginBtn"><i class="fa-solid fa-user"><span></i>Log in</div>
             <div class="signupBtn">Sign up</div>
-            <div class="accountBtn" style="display:none;"></div>
+            <div class="accountBtn" style="display:none;"><img class="accountBtnImg"></div>
             <div class="account__dropdown" style="display:none;">
                 <ul>
                     <li class="account__profile">
@@ -54,16 +54,25 @@
                 </div>
                 <div class="account__edit__title">Profile Picture</div>
                 <div class="profilePicture__section">
-                    <div class="profilePicture__edit"><img src="/images/main__pic.png"></div>
+                    <div class="profilePicture__edit">
+                        <input type="file" id="file-uploader" accept="image/gif, image/jpeg, image/png" style="display: none;">
+                        <label for="file-uploader" class="file-uploader">
+                            <img id="profile_pic" class="profile_pic" src="/images/main__pic.png">
+                        </label>
+                    </div>
                 </div>
                 <div class="profilePicture__edit__options">
                     <div class="profilePicture__edit__change">
                         <div class="profilePicture__edit__icon"><i class="fa-solid fa-user-pen"></i></div>
-                        <div>Change</div>
+                        <div>Confirm</div>
                     </div>
                     <div class="profilePicture__edit__remove">
                         <div class="profilePicture__edit__icon"><i class="fa-solid fa-trash"></i></div>
                         <div>Remove</div>
+                    </div>
+                    <div class="profilePicture__edit__cancel" style="display: none;">
+                        <div class="profilePicture__edit__icon"><i class="fa-solid fa-ban"></i></div>
+                        <div>Cancel</div>
                     </div>
                 </div>
             </div>
