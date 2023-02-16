@@ -52,7 +52,6 @@ async function authenticationForIndex(){
             accountProfileUsername.textContent = data.username;
             accountProfileEmail.textContent = data.email;
             accountBtn.textContent = data.username[0].toUpperCase()
-            // accountBtnImg.src = data.pictureUrl
             usernameEditName.textContent = data.username;
             username = data.username;
             profilePic.src = data.pictureUrl
@@ -222,7 +221,7 @@ function declineProfilePic(data){
         profilePic.src = URL.createObjectURL(file);
         const formData = new FormData();
         formData.append("file", file);
-        // upload(formData)
+        upload(formData)
     })
 }
 

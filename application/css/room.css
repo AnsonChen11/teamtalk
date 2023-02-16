@@ -28,6 +28,8 @@ main{
     justify-content: center;
     align-items: center;
 }
+
+
 .video__container{
     display: grid;
     justify-items: center;
@@ -35,16 +37,43 @@ main{
     width: 95%;
     height: 95%;
 }
-.video-grid{
+
+.userSection, .screenSharingSection{
+    position: relative;
+}
+
+.video-grid, .userSection{
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    position: relative;
+    /* position: relative; */
     border-radius: 5px;
     overflow: hidden;
     width: 100%;
     height: 100%;
-    padding: 5px;
+}
+.profile_pic_grid{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    z-index: 1;
+    background-color: #363636
+}
+
+.profile_pic_container{
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.profile_pic{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 video{
@@ -57,7 +86,7 @@ video{
     border-radius: 6px;
 }
 
-.video-grid:hover .video-grid__thumbtack{
+.userSection:hover .video-grid__thumbtack, .screenSharingSection:hover .video-grid__thumbtack{
     opacity: 1;
     /* transition: opacity 0.3s;
     animation: ease-in-out; */
@@ -82,6 +111,8 @@ video{
 .video-grid__thumbtack:hover{
     background-color: #292929aa;
 }
+
+
 
 .video-grid__microphone{
     position: absolute;
@@ -114,12 +145,12 @@ video{
     border-radius: 5px;
 }
 
-.screenVideo{
+.screenSharingVideo{
     transform: rotateY(0deg);
     -webkit-transform:rotateY(0deg); 
     -moz-transform:rotateY(0deg);
     width: 100%; 
-    /* height: 100%; */
+    height: 100%;
 }
 .section__chat{
     flex: 25%;

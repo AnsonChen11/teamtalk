@@ -1,196 +1,193 @@
 /*-------------------------------驗證使用者----------------------------------------------*/
-let username = authentication()
+let username = authentication().username
+let pictureUrl = authentication().pictureUrl
 /*-------------------------------socket連線到伺服器----------------------------------------------*/
 const socket = io.connect("/", {secure: true});
 /*-------------------------------初始化peer連線----------------------------------------------*/
-let myPeer = new Peer({
-    secure: true,
-    // debug: 3
-});
+const myPeer = new Peer({ secure: true, }); // debug: 3
 const peers = {}
 /*-------------------------------初始化peer連線----------------------------------------------*/
-let myVideoStream;
 let roomId;
 let roomIdUrl = window.location.pathname;
-
+let myStream
+let myUserId
+// let videoCount = 0;
 const videoContainer = document.querySelector(".video__container");
-let videoCount = 0;
-const myVideo = document.createElement("video");
-myVideo.className = "myvideo"
-const myVideoGrid = document.createElement("div")
-myVideoGrid.className = "video-grid"
-const constraints = { 
-    video: true, audio: true
-};
+const constraints = { video: true, audio: true };
 
 /*-------------------------------peer打開連線----------------------------------------------*/
-
-//myPeer物件成功連接到伺服器時觸發，並會從伺服器端獲取一個唯一的 ID
+//local端成功連接到peer伺服器時觸發，並會回傳一個唯一的ID
 myPeer.on("open", userId => { 
+    console.log("myUserId", userId)
+    myUserId = userId
+    const video = createUserSections(userId, username)
     roomId = roomIdUrl.match(/([^/]+)$/)[0];
+    socket.emit("joinRoom", roomId, userId);
+    console.log("emit joinRoom", roomId, userId)
+    getUserMedia(video)
     console.log(username)
-    console.log(userId)
-    myVideoGrid.id = userId
-    myVideoGrid.classList.add("self")
-    createPinIcon(myVideoGrid, username)
-    socket.emit("joinRoom", roomId, userId, username);
+    console.log(pictureUrl)
 });
-    
-/*-------------------------------利用getUserMedia獲得使用者的音視訊串流----------------------------------------------*/
-navigator.mediaDevices.getUserMedia(constraints)
-.then(stream => {
-    myVideoStream = stream;
-    addVideoStream(myVideoGrid, myVideo, stream);
-    console.log("獲得stream授權")
-    /*-------------------------------監聽是否有新成員收到連接請求，若有責會發出"call"事件，並回答通話(call.answer)----------------------------------------------*/
-    //(其他使用者端)其他 myPeer物件向該myPeer發出呼叫時觸發。呼叫時，其他myPeer物件會建立一個call物件
-    myPeer.on("call", call => { 
-        console.log("someone call me");
-        console.log(call.peer)
-        //此為分享畫面的串流，做特殊處理
-        if(call.metadata.type === "screen-sharing"){ 
-            const videoGrid = document.createElement("div")
-            const video = document.createElement("video");
-            videoGrid.className = "video-grid"
-            video.classList = "screenVideo";
-            videoGrid.classList.add("screenVideoGrid")
-            videoGrid.id = call.peer
-            createPinIcon(videoGrid, `${username}'s screen`)
-            call.answer(stream);
-            //註冊stream事件，當對方連接到Peer物件時並回答呼叫，對方會發送自己的媒體流，此時觸發stream事件
-            call.on("stream", (shareScreenStream) => { 
-                //加入其他使用者的stream
-                addVideoStream(videoGrid, video, shareScreenStream) 
-                console.log("加入分享畫面")
-            })
-        }
-        //此為加入房間的串流，做一般處理
-        if(call.metadata.type === "join-room"){ 
-            const videoGrid = document.createElement("div")
-            const video = document.createElement("video");
-            videoGrid.id = call.peer
-            videoGrid.className = "video-grid"
-            createPinIcon(videoGrid, username)
-            //其他使用者發送自己的媒體流
-            call.answer(stream); 
-            let count = 0;
-            //註冊stream事件，當對方連接到Peer物件時並回答呼叫，對方會發送自己的媒體流，此時觸發stream事件
-            call.on("stream", (userVideoStream) => { 
-                count = count + 1;
-                if(count == 2){
-                    return
-                }
-                else{
-                    //加入其他使用者的stream
-                    addVideoStream(videoGrid, video, userVideoStream) 
-                    console.log("加入一般視訊媒體")
-                }
-            })
-        }
-    })
-    /*-------------------------------監聽使用者連線----------------------------------------------*/
-    socket.on("userConnected", (userId, username) => {
-        alert(`User connected ${userId} ${username}`)
-        connectToNewUser(userId, stream, username);
-    })
-})
-.catch(error => {
-    console.log("Error accessing media devices.", error)
-})
+
+function createUserSections(userId, username){
+    const html = `
+    <div class="userSection" id="${userId}">
+        <div class="video-grid">
+            <video id="${userId}-video"></video>
+        </div>
+        <div class="profile_pic_grid" style="display: none;">
+            <div class="profile_pic_container">
+                <img class="profile_pic" src="${pictureUrl}">
+            </div>
+        </div>
+        <div class="video-grid__thumbtack">
+            <i class="fa-solid fa-thumbtack"></i>
+        </div>
+        <div class="video-grid__microphone">
+            <i class="fa-solid fa-microphone"></i>
+            <i class="fa-solid fa-microphone-slash" style="display: none;"></i>
+        </div>
+        <div class="pinnedUsername">
+            <div>${username}</div>
+        </div>
+    </div>
+    `
+    videoContainer.insertAdjacentHTML("beforeend", html)
+    const video = document.getElementById(`${userId}-video`);
+    return video
+}
+
+function getUserMedia(video){
+    try{
+        navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+            myStream = stream
+            addVideoStream(video, stream)
+        })
+    }
+    catch(error){
+        console.log("Error getUserMedia.", error)
+    }
+}
 
 /*-------------------------------加入音視訊顯示於畫面上----------------------------------------------*/
-function addVideoStream(videoGrid, video, userVideoStream){
+function addVideoStream(video, stream){
     try{
-        video.srcObject = userVideoStream;
-        video.controls = false;
-        video.playsinline = true;
-        video.autoplay = true;
-        // video.muted = true;
-        console.log(videoGrid)
+        video.srcObject = stream;
         video.addEventListener("loadedmetadata", () => {
             video.play()
         })
-        videoGrid.appendChild(video)
-        videoContainer.appendChild(videoGrid)
-        console.log("加入媒體串流")
-        videoCount++;
-        console.log(videoCount)
+        // videoCount++;
         updateGridTemplate();
-
     }
     catch(error){
         console.log("Error adding video.", error)
     }
 }
 
-/*-------------------------------釘選畫面及圖示----------------------------------------------*/
-const thumbtacks = document.querySelectorAll(".video-grid__thumbtack");
-document.addEventListener("click", (e) => {
-    thumbtacksController(e)
+/*--------------------------監聽是否有新成員收到連接請求，若有責會發出"call"事件，並回答通話(call.answer)-----------------------------*/
+//(remote視角)其他 myPeer物件向該myPeer發出呼叫時觸發。呼叫時，其他myPeer物件會建立一個call物件
+myPeer.on("call", call => { 
+    console.log("someone call me", call.peer);
+    //此為分享畫面的串流，做特殊處理
+    if(call.metadata.type === "screen-sharing"){ 
+        // const { username } = call.metadata;
+        const { screenSharingVideo } = createScreenSharingSection(username)
+        call.answer(myStream);
+        //註冊stream事件，當對方連接到Peer物件時並回答呼叫，對方會發送自己的媒體流，此時觸發stream事件
+        call.on("stream", (shareScreenStream) => { 
+            //加入其他使用者的stream
+            addVideoStream(screenSharingVideo, shareScreenStream) 
+            console.log("加入分享畫面")
+        })
+    }
+    //此為加入房間的串流，做一般處理
+    if(call.metadata.type === "join-room"){ 
+        //其他使用者回覆自己的媒體流
+        console.log(call)
+        const { username } = call.metadata; // Extract userId and username from metadata
+        const userId = call.peer
+        call.answer(myStream); //回覆remote的自己stream
+        let count = 0;
+        //註冊stream事件，當對方連接到Peer物件時並回答呼叫，對方會發送自己的媒體流，此時觸發stream事件
+        call.on("stream", (remoteStream) => { //其他端收到後回覆該端的stream
+            count = count + 1;
+            if(count == 2){
+                return
+            }
+            else{
+                //加入remote視角的remote(其他使用者)的stream
+                const video = createUserSections(userId, username);
+                addVideoStream(video, remoteStream);
+            }
+        })
+    }
+})
+/*-------------------------------(local)監聽使用者連線----------------------------------------------*/
+socket.on("userConnected", (userId, username) => {
+    const call = myPeer.call(userId, myStream, {metadata: {type: "join-room", username: username}}); //remoteId, localStream to sent to remote
+    console.log(myStream)
+    let count = 0;
+    call.on("stream", (remoteStream) => { //remoteId received and sent remoteStream to local
+        count = count + 1;
+        if(count == 2){
+            return
+        } 
+        else {
+            console.log("收到對方接受回傳stream ", remoteStream)
+            const video = createUserSections(userId, username)
+            addVideoStream(video, remoteStream)
+        }
+    });
+
+    call.on("close", (call) => { 
+        console.log("close on stream")
+    });
+    peers[userId] = call
+    console.log(peers)
 });
 
-function thumbtacksController(e){
-    const thumbtack = e.target.closest(".video-grid__thumbtack");
-    const videoGrids = document.querySelectorAll(".video-grid");
-    if (thumbtack){
-        if(thumbtack.style.color === "rgb(44, 128, 212)"){ //取消釘選
-            videoGrids.forEach(videoGrid => {
-                const thumbtackInGrid = videoGrid.querySelector(".video-grid__thumbtack");
-                if(thumbtackInGrid.style.color !== "rgb(44, 128, 212)"){
-                    videoGrid.style.display = "block";
-                    updateGridTemplate()
-                    console.log("其他畫面出現")
-                }
-                // else{
-                //     videoGrid.style.display = "none";
-                //     console.log("釘選")
-                // }
-            })
-            thumbtack.style.color = "";
-            thumbtack.classList.remove("pinned");
-            updateGridTemplate()
-            console.log("釘選畫面解除")
-        } 
-        else{//釘選畫面
-            thumbtack.style.color = "rgb(44, 128, 212)";
-            thumbtack.classList.add("pinned");
-            videoGrids.forEach(videoGrid => {
-                const thumbtackInGrid = videoGrid.querySelector(".video-grid__thumbtack");
-                if(thumbtackInGrid.style.color === "rgb(44, 128, 212)"){
-                    videoGrid.style.display = "block";
-                    updateGridTemplate()
-                    console.log("釘選畫面開始")
-                }
+/*-------------------------------釘選畫面及圖示----------------------------------------------*/
+document.addEventListener("click", (e) => {
+    const thumbtack = e.target.closest(".video-grid__thumbtack")
+    if(thumbtack){
+        const userId = thumbtack.parentNode.id
+        const userSections = document.querySelectorAll(".userSection")
+        if(thumbtack.style.color !== "rgb(44, 128, 212)"){
+            userSections.forEach((userSection) => {
+                if(userSection.id === userId){
+                  userSection.style.display = "block"
+                  thumbtack.style.color = "rgb(44, 128, 212)"
+                  updateGridTemplate()
+                } 
                 else{
-                    videoGrid.style.display = "none";
-                    updateGridTemplate()
-                    console.log("其他畫面隱藏")
+                  userSection.style.display = "none"
+                  updateGridTemplate()
                 }
             })
-            
         }
+        else{
+            userSections.forEach((userSection) => {
+                userSection.style.display = "block"
+                thumbtack.style.color = ""
+                updateGridTemplate()
+            })
+        }
+
     }
-}
-
-function createPinIcon(videoGrid, username){
-    videoGrid.insertAdjacentHTML("beforeend", `
-    <div class="video-grid__thumbtack">
-        <i class="fa-solid fa-thumbtack"></i>
-    </div>
-    <div class="video-grid__microphone">
-        <i class="fa-solid fa-microphone"></i>
-        <i class="fa-solid fa-microphone-slash" style="display: none;"></i>
-    </div>
-    <div class="pinnedUsername">
-        <div>${username}</div>
-    </div>
-    `);
-}
-
-
+});
 
 /*-------------------------------畫面呈現grid網格----------------------------------------------*/
 function updateGridTemplate(){
+    let invisibleCount = 0
+    const userSections = document.querySelectorAll(".userSection")
+    userSections.forEach(userSection => {
+        if (userSection.style.display === "none") {
+            invisibleCount++;
+        }
+    });
+    videoCount = userSections.length - invisibleCount
+    console.log(videoCount)
     let columns = Math.ceil(Math.sqrt(videoCount));
     let rows = Math.ceil(videoCount / columns);
     console.log("columns", columns, "rows", rows)
@@ -227,46 +224,21 @@ function updateGridTemplate(){
         videoContainer.style.width = "95%";
     }
 }
-/*-------------------------------建立peer.connect到新成員的peer----------------------------------------------*/
-function connectToNewUser(userId, stream, username){
-    console.log('I call someone     ' + userId);
-    //加入type判斷是屬於哪種類型的媒體串流
-    const call = myPeer.call(userId, stream, {metadata: {type: "join-room"}}); 
-    console.log(call)
-    const videoGrid = document.createElement("div")
-    const video = document.createElement("video");
-    videoGrid.id = userId
-    videoGrid.className = "video-grid"
-    createPinIcon(videoGrid, username)
-    let count = 0;
-    call.on("stream", (userVideoStream) => {
-        count = count + 1;
-        if(count == 2){
-            return
-        } 
-        else {
-            console.log("收到對方接受回傳stream ")
-            addVideoStream(videoGrid, video, userVideoStream)
-        }
-    })
 
-    call.on("close", () => { 
-        //執行完peers[userId].close()才會移除使用者video
-        console.log("close on stream")
-        video.remove();
-        videoGrid.remove()
-        videoCount--;
-        updateGridTemplate()
-    })
-    peers[userId] = call
-    console.log(peers, userId, call)
-}
 /*-------------------------------監聽使用者離線----------------------------------------------*/
 socket.on("userDisconnected", (userId) => {
     try{
         console.log(peers[userId])
         if (peers[userId]) peers[userId].close() //關閉對該使用者的連接
         console.log("斷開連線")
+        const userSection = document.getElementById(userId);
+        const video = document.getElementById(userId + "-video");
+        console.log(userSection)
+        console.log(video)
+        if (userSection) userSection.remove();
+        if (video) video.remove();
+        // videoCount--;
+        updateGridTemplate();
     }
     catch(e){
         console.log('[error]','leave room :', e);
@@ -288,35 +260,32 @@ const sectionChat = document.getElementById("section__chat");
 const sectionVideo = document.querySelector(".section__video");
 const controlsVideo = document.querySelector(".controls__video");
 
-
-
 /*-------------------------------控制音訊開關----------------------------------------------*/
 audioMute.addEventListener("click", () => {
-    const self = document.querySelector(".self");
-    const id = self.getAttribute("id");
+    const myUserSection = document.getElementById(`${myUserId}`);
     const controlsVideo = document.querySelector(".controls__video");
-    const audioTrack = myVideoStream.getAudioTracks()[0]; 
-    const selfAudioIcon = self.querySelector(".fa-microphone")
-    const selfAudioSlashIcon = self.querySelector(".fa-microphone-slash")
+    const audioTrack = myStream.getAudioTracks()[0]; 
+    const myAudioIcon = myUserSection.querySelector(".fa-microphone")
+    const myAudioSlashIcon = myUserSection.querySelector(".fa-microphone-slash")
     const audioIcon = controlsVideo.querySelector(".fa-microphone")
     const audioSlashIcon = controlsVideo.querySelector(".fa-microphone-slash")
     if(audioTrack.enabled === true){
         audioTrack.enabled = false;
         audioMute.style.backgroundColor = "rgb(192, 13, 13)";
-        selfAudioIcon.style.display = "none";
+        myAudioIcon.style.display = "none";
         audioIcon.style.display = "none";
-        selfAudioSlashIcon.style.display = "block";
+        myAudioSlashIcon.style.display = "block";
         audioSlashIcon.style.display = "block";
-        socket.emit("audioStatus", id, {muted: true})
+        socket.emit("audioStatus", myUserId, {muted: true})
     }
     else{
         audioTrack.enabled = true;
         audioMute.style.backgroundColor = "rgb(82, 83, 83)";
-        selfAudioIcon.style.display = "block";
+        myAudioIcon.style.display = "block";
         audioIcon.style.display = "block";
-        selfAudioSlashIcon.style.display = "none";
+        myAudioSlashIcon.style.display = "none";
         audioSlashIcon.style.display = "none";
-        socket.emit("audioStatus", id, {muted: false});
+        socket.emit("audioStatus", myUserId, {muted: false});
     }
 });
 
@@ -337,7 +306,10 @@ socket.on("audioStatusControl", (id, audioStatus) => {
 
 /*-------------------------------控制視訊開關----------------------------------------------*/
 videoStop.addEventListener("click", () => {
-    const videoTrack = myVideoStream.getVideoTracks()[0]; 
+    const myUserSection = document.getElementById(`${myUserId}`);
+    const profilePicGrid = myUserSection.querySelector(".profile_pic_grid")
+    const profileUrl = myUserSection.querySelector(".profile_pic").src
+    const videoTrack = myStream.getVideoTracks()[0]; 
     const videoIcon = document.querySelector(".fa-video")
     const videoSlashIcon = document.querySelector(".fa-video-slash")
     if(videoTrack.enabled === true){
@@ -345,116 +317,138 @@ videoStop.addEventListener("click", () => {
         videoStop.style.backgroundColor = "rgb(192, 13, 13)";
         videoIcon.style.display = "none";
         videoSlashIcon.style.display = "block";
+        profilePicGrid.style.display = "flex";
         // videoTrack.stop();
+        socket.emit("videoStop", myUserId, profileUrl)
     }
     else{
         videoTrack.enabled = true;
         videoStop.style.backgroundColor = "rgb(82, 83, 83)";
         videoIcon.style.display = "block";
         videoSlashIcon.style.display = "none";
-        // const myvideo = document.querySelector(".myvideo");
-        // navigator.mediaDevices.getUserMedia(constraints)
-        // .then(stream => {
-        //     myvideo.srcObject = stream;
-        // })
+        const myVideo = document.getElementById(`${myUserId}-video`);
+        console.log(myVideo);
+        getUserMedia(myVideo);
+        profilePicGrid.style.display = "none";
+        socket.emit("videoOpen", myUserId)
     }
 })
+
+socket.on("videoStopControl", (id, profileUrl) => {
+    console.log(id, profileUrl)
+    const remoteUserSection = document.getElementById(id);
+    const remoteProfilePicGrid = remoteUserSection.querySelector(".profile_pic_grid")
+    const remoteProfile_pic = remoteUserSection.querySelector(".profile_pic")
+    remoteProfile_pic.src = profileUrl
+    remoteProfilePicGrid.style.display = "flex";
+});
+
+socket.on("videoOpenControl", (id) => {
+    const remoteUserSection = document.getElementById(id);
+    const remoteProfilePicGrid = remoteUserSection.querySelector(".profile_pic_grid");
+    // const remoteVideo = document.getElementById(`${id}-video`);
+    // addVideoStream(remoteVideo, remoteStream);
+    remoteProfilePicGrid.style.display = "none";
+});
 /*-------------------------------分享螢幕畫面----------------------------------------------*/
 let isScreenSharing = false;
-let screenStream;
-let videoScreen;
-let videoGridScreen;
+let screenSharingStream;
+let screenVideo;
+let screenSection;
 shareScreen.addEventListener("click", () => {
-        // try{
+        try{
             if(!isScreenSharing){
-                navigator
-                .mediaDevices
-                .getDisplayMedia()
+                navigator.mediaDevices.getDisplayMedia()
                 .then(stream => {
-                    screenStream = stream;
+                    screenSharingStream = stream;
                     isScreenSharing  = true;
-                    videoScreen = document.createElement("video");
-                    videoGridScreen = document.createElement("div")
-                    videoScreen.classList = "screenVideo";
-                    videoGridScreen.className = "video-grid"
-                    videoGridScreen.classList.add("screenVideoGrid");
-                    console.log(videoGridScreen)
-                    createPinIcon(videoGridScreen, username)
-                    addVideoStream(videoGridScreen, videoScreen, screenStream);
+                    const { screenSharingVideo, screenSharingSection } = createScreenSharingSection();
+                    screenVideo = screenSharingVideo
+                    screenSection = screenSharingSection
+                    addVideoStream(screenSharingVideo, screenSharingStream);
                     shareScreen.style.backgroundColor = "rgb(58, 173, 102)";
-                    // shareScreen.disabled = true;
                     const connectedPeers = Object.keys(myPeer.connections);
-    
+                    console.log(connectedPeers);
                     if(connectedPeers.length > 0){
-                        shareScreenToPeers(screenStream, connectedPeers)
+                        shareScreenToPeers(screenSharingStream, connectedPeers);
                     }
                     //分享者結束分享畫面
-                    screenStream.getVideoTracks()[0].addEventListener("ended", () => {
-                        closeScreenStream(videoScreen, videoGridScreen)
+                    screenSharingStream.getVideoTracks()[0].addEventListener("ended", () => {
+                        closeScreenStream(screenSharingVideo, screenSharingSection);
                     });
-                })
+                });
             }
             else{
                 //再次點擊結束分享
-                screenStream.getVideoTracks()[0].stop();
-                screenStream = null;
-                closeScreenStream(videoScreen, videoGridScreen)
+                screenSharingStream.getVideoTracks()[0].stop();
+                screenSharingStream = null;
+                closeScreenStream(screenVideo, screenSection)
             }
-        // }    
-        // catch(error){
-        //     console.error(`Error: ${error}`);
-        // }
+        }    
+        catch(error){
+            console.error(`Error: ${error}`);
+        }
 });
+
+function createScreenSharingSection(){
+    const screenSharingSectionHtml = `
+    <div class="screenSharingSection userSection">
+        <div class="video-grid">
+            <video class="screenSharingVideo"></video>
+        </div>
+        <div class="video-grid__thumbtack">
+            <i class="fa-solid fa-thumbtack"></i>
+        </div>
+        <div class="pinnedUsername">
+            <div>${username}'s screen</div>
+        </div>
+    </div>
+    `
+    videoContainer.insertAdjacentHTML("beforeend", screenSharingSectionHtml)
+    const screenSharingVideo = document.querySelector(".screenSharingVideo");
+    const screenSharingSection = document.querySelector(".screenSharingSection")
+    return {screenSharingVideo, screenSharingSection}
+}
 
 function shareScreenToPeers(screenStream, connectedPeers){
     connectedPeers.forEach(peerId => {
-        //加入type判斷是屬於哪種類型的媒體串流
         myPeer.call(peerId, screenStream, { metadata: { type: "screen-sharing" } }); 
         console.log("通知所有使用者開始分享畫面")
     });
 };
 
 
-function closeScreenStream(video, videoGrid){
-    socket.emit("finishedScreenStream", video);
-    console.log("發送finishedScreenStream事件", )
-    // shareScreen.disabled = false;
+function closeScreenStream(screenSharingVideo, screenSharingSection){
+    socket.emit("finishedScreenStream");
     shareScreen.style.backgroundColor = "rgb(82, 83, 83)";
-    video.remove();
-    videoGrid.remove()
-    videoCount--;
+    screenSharingVideo.remove();
+    screenSharingSection.remove()
+    // videoCount--;
     isScreenSharing = false;
-    console.log("結束分享螢幕");
-    const videoGrids = document.querySelectorAll(".video-grid");
-    videoGrids.forEach(videoGrid => {
-        const thumbtackInGrid = videoGrid.querySelector(".video-grid__thumbtack");
+    const userSections = document.querySelectorAll(".userSection");
+    userSections.forEach(userSection => {
+        const thumbtackInGrid = userSection.querySelector(".video-grid__thumbtack");
         if(thumbtackInGrid.style.color !== "rgb(44, 128, 212)"){
-            videoGrid.style.display = "block";
-            updateGridTemplate()
-            console.log("其他畫面出現")
-            console.log("更新grid畫面");
+            screenSharingSection.style.display = "block";
+            updateGridTemplate();
         }
     });
 }
 
-socket.on("removeScreenStream", (video) => {
-    console.log(video)
-    const screenVideo = document.querySelector(".screenVideo")
-    const screenVideoGrid = document.querySelector(".screenVideoGrid")
-    screenVideo.remove();
-    screenVideoGrid.remove()
-    videoCount--;
-    const videoGrids = document.querySelectorAll(".video-grid");
-    videoGrids.forEach(videoGrid => {
-        const thumbtackInGrid = videoGrid.querySelector(".video-grid__thumbtack");
+socket.on("removeScreenStream", () => {
+    const screenSharingVideo = document.querySelector(".screenSharingVideo")
+    const screenSharingSection = document.querySelector(".screenSharingSection")
+    screenSharingVideo.remove();
+    screenSharingSection .remove()
+    // videoCount--;
+    const userSections = document.querySelectorAll(".userSection");
+    userSections.forEach(userSection => {
+        const thumbtackInGrid = userSection.querySelector(".video-grid__thumbtack");
         if(thumbtackInGrid.style.color !== "rgb(44, 128, 212)"){
-            videoGrid.style.display = "block";
+            userSection.style.display = "block";
             updateGridTemplate()
-            console.log("其他畫面出現")
-            console.log("更新grid畫面");
         }
     });
-    console.log("移除新的video")
 })
 
 /*-------------------------------聊天室----------------------------------------------*/
@@ -509,32 +503,13 @@ socket.on("createMessage", (message, userId, username) => {
         </div>`;
 });
 
-// const messagesBorder = document.querySelector(".messagesBorder");
-// socket.on("createMessage", (message, userId, username) => {
-//     const myUsernameColor = socket.id === userId ? "#00b028" : "#0372c9";
-//     const messagePosition = socket.id === userId ? 'style="display: flex; flex-direction: column; align-items: flex-end;"'  : "";
-//     const usernameDisplay = socket.id === userId ? 'style="display: none;"'  : "";
-//     const time = new Date().toLocaleTimeString("en-US", {hour12: true, hour: "2-digit", minute:"2-digit"});
-//     messagesBorder.innerHTML = messagesBorder.innerHTML + `
-//         <div class="messages" ${messagePosition}>
-//             <li class="messageUser" ${usernameDisplay}>${username}</li>
-//             <li class="message" style="background-color:${myUsernameColor};">${message} <li class="messageTime">${time}</li></li>
-           
-//         </div>`;
-// });
-
 /*-------------------------------螢幕錄影----------------------------------------------*/
 videoRecord.addEventListener("click", async() => {
-    const screenStream = await navigator.mediaDevices.getDisplayMedia({ 
-        video: true,
-        displaySurface: "screen" 
-    });
+    const screenRecordStream = await navigator.mediaDevices.getDisplayMedia({ 
+        video: true, displaySurface: "screen" });
+    const options = { mimeType: "video/webm; codecs=vp9",};
 
-    const options = {
-        mimeType: "video/webm; codecs=vp9",
-    };
-
-    mediaRecorder = new MediaRecorder(screenStream, options);
+    mediaRecorder = new MediaRecorder(screenRecordStream, options);
     console.log(mediaRecorder)
     console.log(mediaRecorder.state)
     const chunks = [];
@@ -548,16 +523,22 @@ videoRecord.addEventListener("click", async() => {
         console.log(chunks);
     });
 
+    //點擊結束共用螢幕(預設)
+    screenRecordStream.getVideoTracks()[0].addEventListener("ended", () => {
+        videoRecordStopAndDownload(chunks);
+        videoRecord.style.display = "block";
+        videoRecordPause.style.display = "none";
+        videoRecordStop.style.display = "none";
+        videoRecordPause.innerHTML = '<i class="fa-solid fa-pause"></i><div>Pause</div>'
+    });
+
+    //點擊停止錄影
     videoRecordStop.addEventListener("click", () => {
-        console.log("停止錄製")
-        mediaRecorder.stop();
-        const recordedBlob = new Blob(chunks, { type: "video/webm; codecs=vp9" });
-        const recordedUrl = URL.createObjectURL(recordedBlob);
-        const a = document.createElement("a");
-        let fileName = "TeamTalk_recording_" + Date.now() + ".webm"
-        a.href = recordedUrl;
-        a.download = fileName;
-        a.click();
+        videoRecordStopAndDownload(chunks);
+        console.log(screenRecordStream.getTracks())
+        screenRecordStream.getTracks().forEach(function(track) {
+            track.stop();
+        });
         videoRecord.style.display = "block";
         videoRecordPause.style.display = "none";
         videoRecordStop.style.display = "none";
@@ -580,9 +561,19 @@ function videoRecordController(mediaRecorder){
     });
 }
 
+function videoRecordStopAndDownload(chunks){
+    console.log("停止錄製")
+    mediaRecorder.stop();
+    const recordedBlob = new Blob(chunks, { type: "video/webm; codecs=vp9" });
+    const recordedUrl = URL.createObjectURL(recordedBlob);
+    const a = document.createElement("a");
+    let fileName = "TeamTalk_recording_" + Date.now() + ".webm"
+    a.href = recordedUrl;
+    a.download = fileName;
+    a.click();
+}
 /*-------------------------------結束通話----------------------------------------------*/
 disconnect.addEventListener("click", () => {
-    console.log("Disconnect")
     window.location.href = "/"
 })
 
@@ -610,9 +601,8 @@ async function authentication(){
         })
         .then(data => {
             username = data.username;
-            return username
-            // accountProfileEmail.textContent = data.email;
-            // accountBtn.textContent = data.username[0].toUpperCase()
+            pictureUrl = data.pictureUrl;
+            return { username, pictureUrl }
         })
     }
     catch(error){
@@ -628,4 +618,3 @@ function getCookie(key) {
 		return parts.pop().split(";").shift();
 	}
 }
-  
