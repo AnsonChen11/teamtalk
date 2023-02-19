@@ -259,7 +259,7 @@ const disconnect = document.getElementById("video__disconnect");
 const sectionChat = document.getElementById("section__chat");
 const sectionVideo = document.querySelector(".section__video");
 const controlsVideo = document.querySelector(".controls__video");
-
+const whiteboardBtn = document.getElementById("whiteboard__btn");
 /*-------------------------------控制音訊開關----------------------------------------------*/
 audioMute.addEventListener("click", () => {
     const myUserSection = document.getElementById(`${myUserId}`);
@@ -329,7 +329,9 @@ videoStop.addEventListener("click", () => {
         const myVideo = document.getElementById(`${myUserId}-video`);
         console.log(myVideo);
         getUserMedia(myVideo);
-        profilePicGrid.style.display = "none";
+        setTimeout(() =>{
+            profilePicGrid.style.display = "none";
+        }, 500);
         socket.emit("videoOpen", myUserId)
     }
 })
@@ -577,6 +579,17 @@ disconnect.addEventListener("click", () => {
     window.location.href = "/"
 })
 
+/*-------------------------------白板開關----------------------------------------------*/
+const whiteboard = document.getElementById("whiteboard");
+whiteboardBtn.addEventListener("click", () => {
+    if(whiteboard.style.display === "none"){
+        whiteboard.style.display = "flex"
+    }
+    else{
+        whiteboard.style.display = "none"
+    }
+})
+
 /*-------------------------------驗證使用者----------------------------------------------*/
 async function authentication(){
     let token = getCookie("token"); // 取得cookie中的token
@@ -618,3 +631,315 @@ function getCookie(key) {
 		return parts.pop().split(";").shift();
 	}
 }
+
+
+/*-----------------------------------------whiteboard-----------------------------------------------*/
+// initialize canvas element
+const canvas = document.querySelector("canvas")
+const ctx = canvas.getContext("2d");
+canvas.width = 1200;
+canvas.height = 680;
+ctx.fillStyle = "#FFFFFF";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+// set up mouse event listeners
+let drawing = false;
+let lastX = 0;
+let lastY = 0;
+let hue = 0; 
+let lightness = "60%";
+let lineWidth = 1;
+ // array to store all drawings for undo/redo
+let drawings = [];
+// push the initial state of canvas into the array
+drawings.push(canvas.toDataURL());
+let undoArray = [];
+
+// let isTextBoxMode = false; // 是否處於 textBox 模式下
+// let textBoxX, textBoxY; // 文字輸入框出現的位置
+// let isTyping = false;
+// let textBoxes = [];
+
+canvas.addEventListener("mousedown", (e) => {
+    lastX = e.offsetX;
+    lastY = e.offsetY;
+    drawing = true;
+    // if the text box is active, remove it when user clicks on canvas
+    // if (textBoxes.length > 0) {
+    //     const textBox = textBoxes[textBoxes.length - 1];
+    //     if (textBox.isActive) {
+    //         textBox.isActive = false;
+    //         textBoxes.pop();
+    //     }
+    // }
+});
+
+canvas.addEventListener("mousemove", (e) => {
+    if (drawing) {
+        draw(lastX, lastY, e.offsetX, e.offsetY, `hsl(${hue}, 100%, ${lightness})`, lineWidth);
+        lastX = e.offsetX;
+        lastY = e.offsetY;
+    }
+});
+
+canvas.addEventListener("mouseup", () => {
+    drawing = false;
+    drawings.push(canvas.toDataURL());
+    socket.emit("updateDrawings", drawings)
+});
+
+canvas.addEventListener("mouseout", () => {
+    drawing = false;
+});
+
+socket.on("draw", (data) => {
+    draw(data.lastX, data.lastY, data.x, data.y, data.color, data.lineWidth);
+});
+
+// draw function to draw lines on canvas
+function draw(lastX, lastY, x, y, color = `hsl(${hue}, 100%, ${lightness})`, lineWidth = 1) {
+    ctx.beginPath(); //開始一條新的路徑
+    ctx.moveTo(lastX, lastY); // 設置起點坐標
+    ctx.lineTo(x, y); //繪製一條從起點到終點的線段
+    ctx.strokeStyle = color; //設置線段的顏色
+    ctx.lineWidth = lineWidth; //設置線段的寬度
+    ctx.lineCap = "round"; //設置線段端點的樣式為圓形
+    ctx.stroke(); //畫出線段
+    // hue = (hue + 1) % 360; // increment hue value for next line
+    socket.emit("draw", { lastX, lastY, x, y, color, lineWidth }); // emit draw event to server
+}
+
+/*-----------------------------------------toolsBar-----------------------------------------------*/
+/*-----------------------------------------palette-----------------------------------------------*/
+const tools = document.querySelectorAll(".tools");
+const palette = document.querySelector(".palette");
+const paletteMenu = document.querySelector(".palette__menu");
+const colors = document.querySelectorAll(".color");
+palette.addEventListener("click", () =>{
+    // 重置所有tools的背景色
+    tools.forEach(tool => {
+        tool.style.backgroundColor = "";
+    });
+    // 設置palette的背景色為灰色
+    palette.style.backgroundColor = "#dadada";
+    paletteMenu.style.display = "flex";
+})
+
+let currentCursorColor = "red";
+colors.forEach(color => {
+    color.addEventListener("click", (e) => {
+        hue = parseInt(e.target.getAttribute("hue"));
+        lightnessValue = e.target.getAttribute("lightness");
+        if(lightnessValue){
+            lightness = lightnessValue;
+        }
+        else{
+            lightness = "60%"
+        };
+        currentCursorColor = e.target.classList[1];
+        updateCursor();
+        paletteMenu.style.display = "none";
+    });
+});
+
+function updateCursor(){
+    canvas.classList.remove("red_cursor", "orange_cursor", "yellow_cursor", "green_cursor", "blue_cursor", "purple_cursor", "black_cursor", "eraser_cursor", "text_cursor");
+    canvas.classList.add(`${currentCursorColor}_cursor`);
+}
+
+// 點擊canvas時隱藏menu，但保留背景色
+canvas.addEventListener("click", () => {
+    paletteMenu.style.display = "none";
+    penStrokeMenu.style.display = "none";
+    // 重置所有tools的背景色
+    tools.forEach(tool => {
+        tool.style.backgroundColor = "";
+    });
+    // // 保留palette的背景色
+    // palette.style.backgroundColor = "#dadada";
+});
+
+document.addEventListener("click", (e) => {
+    if (!palette.contains(e.target) && !paletteMenu.contains(e.target)) {
+      palette.style.backgroundColor = "transparent";
+      paletteMenu.style.display = "none";
+    }
+});
+
+/*-----------------------------------------stroke-----------------------------------------------*/
+const penStroke = document.querySelector(".penStroke");
+const penStrokeMenu = document.querySelector(".penStroke__menu");
+const penStrokeSizes = document.querySelectorAll(".penStrokeSize")
+
+penStroke.addEventListener("click", () => {
+    tools.forEach(tool => {
+        tool.style.backgroundColor = "";
+    });
+    // 設置p背景色為灰色
+    penStroke.style.backgroundColor = "#dadada";
+    penStrokeMenu.style.display = "flex";
+});
+
+penStrokeSizes.forEach(penStrokeSize => {
+    penStrokeSize.addEventListener("click", (e) => {
+        lineWidth = parseInt(e.target.getAttribute("lineWidth"));
+        paletteMenu.style.display = "none";
+    });
+});
+/*-----------------------------------------eraser-----------------------------------------------*/
+const eraser = document.querySelector(".eraser");
+eraser.addEventListener("click", () => {
+    lightness = "100%"
+    lineWidth = 20
+    currentCursorColor = "eraser";
+    updateCursor();
+});
+
+/*-----------------------------------------undo/redo-----------------------------------------------*/
+const undoBtn = document.querySelector(".undoBtn");
+const redoBtn = document.querySelector(".redoBtn");
+
+
+undoBtn.addEventListener("click", () => {
+    undo()
+})
+
+redoBtn.addEventListener("click", () => {
+    redo()
+})
+
+// handle undo/redo click
+function undo(){
+    if(drawings.length > 1){
+      // remove the last state from the drawings array
+    undoArray.push(drawings.pop());
+    console.log("undoArray", undoArray);
+    console.log("drawings", drawings)
+    // load the previous state from the drawings array to the canvas
+    const lastState = new Image();
+    lastState.src = drawings[drawings.length - 1];
+    lastState.onload = function(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(lastState, 0, 0);
+    };
+    socket.emit("undo");
+    }
+}
+
+function redo(){
+    if(undoArray.length > 0){
+      // remove the last state from the undoArray
+    const redoState = undoArray.pop();
+    console.log("undoArray", undoArray);
+    console.log("drawings", drawings)
+    // load the redo state to the canvas
+    const lastState = new Image();
+    lastState.src = redoState;
+    lastState.onload = function(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(lastState, 0, 0);
+        // push the redo state to the drawings array
+        drawings.push(redoState);
+    };
+    socket.emit("redo");    
+    };
+};
+
+// socket.on("undo", function(){
+//     if(drawings.length > 1){
+//         // remove the last state from the drawings array
+//         undoArray.push(drawings.pop());
+//         // load the previous state from the drawings array to the canvas
+//         const lastState = new Image();
+//         lastState.src = drawings[drawings.length - 1];
+//         lastState.onload = function(){
+//               ctx.clearRect(0, 0, canvas.width, canvas.height);
+//               ctx.drawImage(lastState, 0, 0);
+//         };
+//     }
+// });
+
+// socket.on("redo", function() {
+//     if(undoArray.length > 0){
+//       // remove the last state from the undoArray
+//         const redoState = undoArray.pop();
+//         // load the redo state to the canvas
+//         const lastState = new Image();
+//         lastState.src = redoState;
+//         lastState.onload = function(){
+//             ctx.clearRect(0, 0, canvas.width, canvas.height);
+//             ctx.drawImage(lastState, 0, 0);
+//             // push the redo state to the drawings array
+//             drawings.push(redoState);
+//         };
+//     };
+// });
+// /*-----------------------------------------input text-----------------------------------------------*/
+
+// let isTextBoxActive = false;
+// let textBoxX, textBoxY;
+// const textBox = document.querySelector(".textBox");
+// textBox.addEventListener("click", () => {
+//     isTextBoxActive = true; // 設置為true，以便在畫布上點擊時啟用此功能
+//     currentCursorColor = "text";
+//         updateCursor()
+// });
+// let currentInput;
+// canvas.addEventListener("click", (e) => {
+//     if(isTextBoxActive){
+//         // currentCursorColor = "text";
+//         // updateCursor()
+//         textBoxX = e.pageX;
+//         textBoxY = e.pageY;
+//         const input = document.createElement("input");
+//         input.type = "text";
+//         input.style.position = "absolute";
+//         input.style.left = textBoxX + "px";
+//         input.style.top = textBoxY + "px";
+//         input.style.width = "100px";
+//         input.style.height = "50px";
+//         input.style.border = "none";
+//         input.style.padding = "5px";
+//         input.style.fontFamily = "Arial";
+//         input.style.fontSize = "16px";
+//         input.style.backgroundColor = "#FFFFFF";
+//         input.style.color = "#000000";
+//         canvas.parentNode.appendChild(input);
+//         input.focus();
+//         isTextBoxActive = false;
+//         // canvas.style.cursor = "default";
+
+//         input.addEventListener("blur", (e) => {
+//             if(e.target.value.trim() === ""){
+//                 input.remove();
+//             }
+//             else{
+//                 socket.emit("input", { 
+//                     text: input.value, 
+//                     x: input.offsetLeft, 
+//                     y: input.offsetTop, 
+//                     width: input.offsetWidth, 
+//                     height: input.offsetHeight 
+//                 }); 
+//             }
+//         }); 
+//     }; 
+// });
+
+// socket.on("input", (data) => {
+//     console.log(data)
+//     const input = document.createElement("input");
+//     input.type = "text";
+//     input.style.position = "absolute";
+//     input.style.left = data.x + "px";
+//     input.style.top = data.y + "px";
+//     input.style.width = data.width + "px";
+//     input.style.height = data.height + "px";
+//     input.style.border = "none";
+//     input.style.padding = "5px";
+//     input.style.fontFamily = "Arial";
+//     input.style.fontSize = "16px";
+//     input.style.color = "#000000";
+//     input.style.backgroundColor = "#FFFFFF";
+//     input.value = data.text;
+//     canvas.parentNode.appendChild(input);
+// });

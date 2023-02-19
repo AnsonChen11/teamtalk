@@ -6,7 +6,8 @@ const io = require("socket.io")(server);
 const { ExpressPeerServer } = require("peer");
 const peerServer = ExpressPeerServer(server, { debug: true });
 const { v4: uuidV4 } = require("uuid");
-
+let drawings = [];
+let undoArray = [];
 
 app.use("/peerjs", peerServer);
 
@@ -53,6 +54,32 @@ io.on("connection", socket => {
         socket.on("videoOpen", (id) => {
             socket.broadcast.to(roomId).emit("videoOpenControl", id);
         })
+
+        socket.on("draw", (data) => {
+            socket.broadcast.emit("draw", data);
+        });
+
+        // socket.on("input", (data) => {
+        //     console.log(data)
+        //     socket.broadcast.emit("input", data);
+        //     console.log("emit input, data)")
+        // });
+        socket.on("updateDrawings", data => {
+            drawings = data;
+            io.emit("updateDrawings", drawings);
+        });
+
+        socket.on("updateUndoArray", data => {
+            undoArray = data;
+            io.emit("updateUndoArray", undoArray);
+        });
+        // socket.on("undo", () => {
+        //     io.emit("undo");
+        // });
+
+        // socket.on("redo", () => {
+        //     io.emit("redo");
+        // });
     })
 });
 

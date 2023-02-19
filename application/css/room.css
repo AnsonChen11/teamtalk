@@ -19,16 +19,20 @@ main{
     height: 100vh;
     display: flex;
 }
+
+
+
 .section__video{
     flex: 75%;
+    position: relative;
 }
+
 .pictures__video{
     height: calc(100vh - 80px);
     display: flex;
     justify-content: center;
     align-items: center;
 }
-
 
 .video__container{
     display: grid;
@@ -59,7 +63,8 @@ main{
     justify-content: center;
     align-items: center;
     position: absolute;
-    z-index: 1;
+    z-index: 2
+;
     background-color: #363636
 }
 
@@ -96,7 +101,7 @@ video{
     position: absolute;
     top: 20px;
     RIGHT: 20px;
-    z-index: 1;
+    z-index: 2;
     color: #ffffff;
     width: 30px;
     height: 30px;
@@ -118,7 +123,7 @@ video{
     position: absolute;
     bottom: 20px;
     right: 20px;
-    z-index: 1;
+    z-index: 2;
     color: #ffffff;
     width: 30px;
     height: 30px;
@@ -138,7 +143,7 @@ video{
     bottom: 20px;
     height: 30px;
     left: 20px;
-    z-index: 1;
+    z-index: 2;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -235,7 +240,7 @@ video{
     background-color: rgb(22, 22, 22);
 }
 
-#video__record, #video__record__resume, #video__record__pause, #video__record__stop, #video__mute, #video__stop, #video__shareScreen, #video__chat, #video__disconnect{
+#video__record, #video__record__resume, #video__record__pause, #video__record__stop, #video__mute, #video__stop, #video__shareScreen, #video__chat, #video__disconnect, #whiteboard__btn{
     height: 50px;
     width: 100px;
     border-radius: 20px;
@@ -247,7 +252,7 @@ video{
 #video__disconnect{
     background-color: rgb(192, 13, 13);
 }
-#video__record:hover, #video__record__resume:hover, #video__record__pause:hover, #video__record__stop:hover, #video__mute:hover, #video__stop:hover, #video__shareScreen:hover, #video__chat:hover{
+#video__record:hover, #video__record__resume:hover, #video__record__pause:hover, #video__record__stop:hover, #video__mute:hover, #video__stop:hover, #video__shareScreen:hover, #video__chat:hover, #whiteboard__btn:hover{
     background-color: rgb(97, 97, 97);   
     cursor: pointer; 
 }
@@ -257,4 +262,194 @@ video{
 }
 .fa-solid{
     font-size: 20px
+}
+
+
+.whiteboard{
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: calc(100vh - 80px);
+    z-index: 10;
+}
+
+
+.toolsBar{
+    width: 50px;
+    height: 300px;
+    background-color: rgb(251 251 251);
+    border: 1px solid #f3f3f3;
+    position: relative;
+    left: 25px;
+    border-radius: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+.tools{
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tools.disabled {
+    background-color: #dadada;
+  }
+
+.tools:hover{
+    background-color: #dadada;
+    cursor: pointer;
+}
+
+.palette{
+    position: relative;
+}
+
+.palette__menu{
+    width: 170px;
+    height: 90px;
+    background-color: #FFFFFF;
+    position: absolute;
+    box-shadow: 0px 0px 3px 1px rgb(0 0 0 / 20%);
+    left: 50px;
+    border-radius: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+  
+.color{
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin: 5px;
+    box-sizing: border-box;
+}
+
+.color:hover{
+    border: 3px solid rgba(233, 233, 233, 0.6);
+    cursor: pointer;
+}
+
+.red{
+    background-color: rgba(241, 86, 86);
+}
+
+.orange{
+    background-color: rgba(255 172 89);
+}
+
+.yellow{
+    background-color: rgb(255, 222, 55);
+}
+
+.green{
+    background-color: rgb(130, 197, 62);
+}
+
+.blue{
+    background-color: rgb(72, 228, 228);
+}
+
+.purple{
+    background-color: rgb(131, 83, 228);
+}
+
+.black{
+    background-color: rgba(0, 0, 0);
+}
+
+.red_cursor{
+    cursor: url("/images/red_cursor.png"), auto;
+}
+
+.yellow_cursor{
+    cursor: url("/images/yellow_cursor.png"), auto;
+}
+
+.orange_cursor{
+    cursor: url("/images/orange_cursor.png"), auto;
+}
+
+.green_cursor{
+    cursor: url("/images/green_cursor.png"), auto;
+}
+
+.blue_cursor{
+    cursor: url("/images/blue_cursor.png"), auto;
+}
+
+.purple_cursor{
+    cursor: url("/images/purple_cursor.png"), auto;
+}
+
+.black_cursor{
+    cursor: url("/images/black_cursor.png"), auto;
+}
+
+.penStroke{
+    position: relative;
+}
+
+.penStroke__menu{
+    width: 130px;
+    height: 50px;
+    background-color: #FFFFFF;
+    position: absolute;
+    box-shadow: 0px 0px 3px 1px rgb(0 0 0 / 20%);
+    left: 50px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.penStrokeSize{
+    border-radius: 50%;
+    margin: 5px;
+    box-sizing: border-box;
+}
+
+.penStrokeSize:hover{
+    border: 3px solid rgba(156, 156, 156, 0.6);
+    cursor: pointer;
+}
+
+.small{
+    width: 10px;
+    height: 10px;
+    background-color: #363636;
+}
+.medium{
+    width: 15px;
+    height: 15px;
+    background-color: #363636;
+}
+.large{
+    width: 20px;
+    height: 20px;
+    background-color: #363636;
+}
+.extraLarge{
+    width: 25px;
+    height: 25px;
+    background-color: #363636;
+}
+
+
+.eraser_cursor{
+    cursor: url("/images/eraser_cursor.png"), auto;
+}
+
+.text_cursor{
+    cursor: url("/images/text_cursor.png"), auto;
 }
