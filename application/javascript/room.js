@@ -53,7 +53,7 @@ async function prepareMeeting(){
 async function joinRoom(){
     const myStream = await prepareMeeting();
     isInRoom = true;
-    const video = await createUserSections(myUserId, username, pictureUrl);
+    const video = await createUserSections(myUserId, "You", pictureUrl);
     await addVideoStream(video, myStream);
     // addVideoStream(createUserSections(myUserId, username, pictureUrl), myStream)
     socket.emit("joinRoom", roomId, myUserId, username, myAudioIsMuted, myVideoIsStopped);
@@ -221,32 +221,26 @@ function createUserSections(userId, username, pictureUrl){
 //(remote視角)其他 myPeer物件向該myPeer發出呼叫時觸發。呼叫時，其他myPeer物件會建立一個call物件
 myPeer.on("call", call => { 
     console.log("someone call me", call.peer);
-    console.log(call.metadata.mediaStatus)
+    const { username } = call.metadata; // Extract userId and username from metadata
+    const userId = call.peer
     //此為分享畫面的串流，做特殊處理
     if(call.metadata.type === "screen-sharing"){ 
         // const { username } = call.metadata;
-        const { screenSharingVideo } = createScreenSharingSection(username)
+        const { screenSharingVideo } = createScreenSharingSection(`${username}'s`)
         call.answer(myStream);
         //註冊stream事件，當對方連接到Peer物件時並回答呼叫，對方會發送自己的媒體流，此時觸發stream事件
         call.on("stream", (shareScreenStream) => { 
-            //加入其他使用者的stream
+            //其他使用者加入分享畫面者的stream
             addVideoStream(screenSharingVideo, shareScreenStream) 
-            console.log("加入分享畫面")
+            console.log("加入分享螢幕者的分享畫面")
         })
     };
     //此為加入房間的串流，做一般處理
     if(call.metadata.type === "join-room"){ 
-        //其他使用者回覆自己的媒體流
-        const { username } = call.metadata; // Extract userId and username from metadata
-        const userId = call.peer
         call.answer(myStream); //回覆remote的自己stream
         let count = 0;
         //註冊stream事件，當對方連接到Peer物件時並回答呼叫，對方會發送自己的媒體流，此時觸發stream事件
         call.on("stream", (remoteStream) => { //其他端收到後回覆該端的stream
-            // const isAudioMuted = remoteStream.getAudioTracks().some(track => track.muted);
-            // console.log(remoteStream.getAudioTracks()[0].enabled)
-            // const isVideoStopped = !remoteStream.getVideoTracks()[0].enabled;
-            // console.log(remoteStream.getVideoTracks()[0].enabled)
             count = count + 1;
             if(count == 2){
                 return
@@ -330,7 +324,7 @@ document.addEventListener("click", (e) => {
         if(thumbtack.style.color !== "rgb(44, 128, 212)"){
             userSections.forEach((userSection) => {
                 if(userSection.id === userId){
-                  userSection.style.display = "block"
+                  userSection.style.display = ""
                   thumbtack.style.color = "rgb(44, 128, 212)"
                   updateGridTemplate()
                 } 
@@ -342,7 +336,7 @@ document.addEventListener("click", (e) => {
         }
         else{
             userSections.forEach((userSection) => {
-                userSection.style.display = "block"
+                userSection.style.display = ""
                 thumbtack.style.color = ""
                 updateGridTemplate()
             })
@@ -546,7 +540,7 @@ shareScreen.addEventListener("click", () => {
                 .then(stream => {
                     screenSharingStream = stream;
                     isScreenSharing  = true;
-                    const { screenSharingVideo, screenSharingSection } = createScreenSharingSection();
+                    const { screenSharingVideo, screenSharingSection } = createScreenSharingSection("Your");
                     screenVideo = screenSharingVideo
                     screenSection = screenSharingSection
                     addVideoStream(screenSharingVideo, screenSharingStream);
@@ -566,7 +560,7 @@ shareScreen.addEventListener("click", () => {
                 //再次點擊結束分享
                 screenSharingStream.getVideoTracks()[0].stop();
                 screenSharingStream = null;
-                closeScreenStream(screenVideo, screenSection)
+                closeScreenStream(screenVideo, screenSection);
             }
         }    
         catch(error){
@@ -574,7 +568,7 @@ shareScreen.addEventListener("click", () => {
         }
 });
 
-function createScreenSharingSection(){
+function createScreenSharingSection(username){
     const screenSharingSectionHtml = `
     <div class="screenSharingSection userSection">
         <div class="video-grid">
@@ -584,7 +578,7 @@ function createScreenSharingSection(){
             <i class="fa-solid fa-thumbtack"></i>
         </div>
         <div class="pinnedUsername">
-            <div>${username}'s screen</div>
+            <div>${username} screen</div>
         </div>
     </div>
     `
@@ -613,7 +607,7 @@ function closeScreenStream(screenSharingVideo, screenSharingSection){
     userSections.forEach(userSection => {
         const thumbtackInGrid = userSection.querySelector(".video-grid__thumbtack");
         if(thumbtackInGrid.style.color !== "rgb(44, 128, 212)"){
-            screenSharingSection.style.display = "block";
+            screenSharingSection.style.display = "";
             updateGridTemplate();
         }
     });
@@ -623,13 +617,12 @@ socket.on("removeScreenStream", () => {
     const screenSharingVideo = document.querySelector(".screenSharingVideo")
     const screenSharingSection = document.querySelector(".screenSharingSection")
     screenSharingVideo.remove();
-    screenSharingSection .remove()
-    // videoCount--;
+    screenSharingSection.remove();
     const userSections = document.querySelectorAll(".userSection");
     userSections.forEach(userSection => {
         const thumbtackInGrid = userSection.querySelector(".video-grid__thumbtack");
         if(thumbtackInGrid.style.color !== "rgb(44, 128, 212)"){
-            userSection.style.display = "block";
+            userSection.style.display = "";
             updateGridTemplate()
         }
     });
@@ -659,8 +652,9 @@ chatInput.addEventListener("keydown", (e) => {
 });
 
 const messagesBorder = document.querySelector(".messagesBorder");
-const messageTime = document.querySelectorAll(".messageTime");
+// const messageTime = document.querySelectorAll(".messageTime");
 let lastUserId = "";
+let usernameDisplay;
 socket.on("createMessage", (message, userId, username) => {
     const myUsernameColor = socket.id === userId ? "#00b028" : "#0372c9";
     const messagePosition = socket.id === userId ? 'style="display: flex; flex-direction: column; align-items: flex-end;"'  : "";
@@ -682,8 +676,10 @@ socket.on("createMessage", (message, userId, username) => {
     messagesBorder.innerHTML = messagesBorder.innerHTML + `
         <div class="messages" ${messagePosition}>
             <li class="messageUser" ${usernameDisplay}>${username}</li>
-            <li class="message" style="background-color:${myUsernameColor};"><div class="messageTime" ${messageTimePosition}>${time}</div>${message}</li>
-            
+            <li class="message" style="background-color:${myUsernameColor};">
+                <div class="messageTime" ${messageTimePosition}>${time}</div>
+                    ${message}
+            </li>
         </div>`;
 });
 
@@ -693,7 +689,7 @@ videoRecord.addEventListener("click", async() => {
         video: true, displaySurface: "screen" });
     const options = { mimeType: "video/webm; codecs=vp9",};
 
-    mediaRecorder = new MediaRecorder(screenRecordStream, options);
+    const mediaRecorder = new MediaRecorder(screenRecordStream, options);
     console.log(mediaRecorder)
     console.log(mediaRecorder.state)
     const chunks = [];
@@ -709,7 +705,7 @@ videoRecord.addEventListener("click", async() => {
 
     //點擊結束共用螢幕(預設)
     screenRecordStream.getVideoTracks()[0].addEventListener("ended", () => {
-        videoRecordStopAndDownload(chunks);
+        videoRecordStopAndDownload(chunks, mediaRecorder);
         videoRecord.style.display = "block";
         videoRecordPause.style.display = "none";
         videoRecordStop.style.display = "none";
@@ -718,7 +714,7 @@ videoRecord.addEventListener("click", async() => {
 
     //點擊停止錄影
     videoRecordStop.addEventListener("click", () => {
-        videoRecordStopAndDownload(chunks);
+        videoRecordStopAndDownload(chunks, mediaRecorder);
         console.log(screenRecordStream.getTracks())
         screenRecordStream.getTracks().forEach(function(track) {
             track.stop();
@@ -745,7 +741,7 @@ function videoRecordController(mediaRecorder){
     });
 }
 
-function videoRecordStopAndDownload(chunks){
+function videoRecordStopAndDownload(chunks, mediaRecorder){
     console.log("停止錄製")
     mediaRecorder.stop();
     const recordedBlob = new Blob(chunks, { type: "video/webm; codecs=vp9" });
@@ -771,8 +767,6 @@ whiteboardBtn.addEventListener("click", () => {
         whiteboard.style.display = "none"
     }
 })
-
-
 /*-----------------------------------------whiteboard-----------------------------------------------*/
 // initialize canvas element
 const canvas = document.querySelector("canvas")
@@ -865,6 +859,7 @@ palette.addEventListener("click", () =>{
 })
 
 let currentCursorColor = "red";
+let lightnessValue;
 colors.forEach(color => {
     color.addEventListener("click", (e) => {
         hue = parseInt(e.target.getAttribute("hue"));
