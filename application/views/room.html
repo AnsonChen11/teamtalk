@@ -14,7 +14,39 @@
         <div>TeamTalk</div>
     </nav> -->
     <main>
-        
+        <div class="beforeJoinTheMeet">
+            <div class="premeeting__video__section">
+                <div class="premeeting__video__preview"><div style="color: white; font-size: 20px; font-weight: 700;">My Preview</div></div>
+                <div class="premeeting__profile__section" style="display: none">
+                    <div class="premeeting__profile">
+                        <img class="premeeting__profile_pic">
+                    </div>
+                </div>
+                <video id="premeeting__video"></video>
+            </div>
+            <div class="premeeting__options">
+                <button class="premeeting__options__audio option">
+                    <div>
+                        <i class="fa-solid fa-microphone-lines"></i>
+                        <i class="fa-solid fa-microphone-lines-slash" style="display:none;"></i>
+                        <span class="audioText">Audio</span>
+                    </div>
+                </button>
+                <button class="premeeting__options__video option">
+                    <div>
+                        <i class="fa-solid fa-video videoCamera"></i>
+                        <i class="fa-solid fa-video-slash videoCameraSlash" style="display:none;"></i>
+                        <span class="videoText">Video</span>
+                    </div>
+                </button>
+                <button class="premeeting__options__join option">
+                    <div>Ready to Join</div>
+                </button>
+                <button class="premeeting__options__exit option">
+                    <div>Exit</div>
+                </button>
+            </div>
+        </div>
         <div class="section__video">
             <div class="whiteboard" id="whiteboard" style="display:none;">
                 <div class="toolsBar">
@@ -41,8 +73,8 @@
                     </div>
                     <!-- <div class="tools">
                         <i class="fa-solid fa-note-sticky"></i>
-                    </div> -->
-                    <!-- <div class="tools textBox">
+                    </div>
+                    <div class="tools textBox">
                         <i class=""><img src="/images/toolsBar_text.png"></i>
                     </div> -->
                     <div class="tools eraser">
@@ -64,7 +96,7 @@
             </div>
             <div class="controls__video">
                 <button id="video__mute"><i class="fa-solid fa-microphone"></i><i class="fa-solid fa-microphone-slash" style="display:none;"></i><div>Audio</div></button>
-                <button id="video__stop"><i class="fa-solid fa-video"></i><i class="fa-solid fa-video-slash" style="display:none;"></i><div>Video</div></button>
+                <button id="video__stop"><i class="fa-solid fa-video videoIcon"></i><i class="fa-solid fa-video-slash videoSlashIcon" style="display:none;"></i><div>Video</div></button>
                 <button id="video__record"><i class="fa-solid fa-record-vinyl"></i><div>Record</div></button>
                 <button id="video__record__resume" style="display:none;"><i class="fa-solid fa-play"></i><div>Resume</div></button>
                 <button id="video__record__pause" style="display:none;"><i class="fa-solid fa-pause"></i><div>Pause</div></button>
@@ -87,7 +119,7 @@
         </div>
     </main>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/javascript/room.js"></script>
+    <script type="module" src="/javascript/room.js"></script>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 </body>
 </html>

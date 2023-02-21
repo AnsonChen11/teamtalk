@@ -12,14 +12,14 @@ let undoArray = [];
 app.use("/peerjs", peerServer);
 
 io.on("connection", socket => {
-    socket.on("joinRoom", (roomId, userId, username) => {
-        console.log(userId, username, "joined room", roomId)
+    socket.on("joinRoom", (roomId, userId, username, isAudioMuted, isVideoStopped) => {
+        console.log(userId, username, "joined room", roomId, "isAudioMuted", isAudioMuted, "isVideoStopped", isVideoStopped)
         socket.join(roomId);
 
         // Wait for 1 second before notifying other users of new user's connection
         setTimeout(()=>{
-            socket.broadcast.to(roomId).emit("userConnected", userId, username);
-            console.log("userConnected event emitted", userId);
+            socket.broadcast.to(roomId).emit("userConnected", userId, username, isAudioMuted, isVideoStopped);
+            console.log("userConnected event emitted", userId, isAudioMuted, isVideoStopped);
         }, 1000);
         
 
@@ -45,6 +45,7 @@ io.on("connection", socket => {
 
         socket.on("audioStatus", (id, audioStatus) => {
             socket.broadcast.to(roomId).emit("audioStatusControl", id, audioStatus);
+            console.log("audioStatus", id, audioStatus)
         });
 
         socket.on("videoStop", (id, profileUrl) => {

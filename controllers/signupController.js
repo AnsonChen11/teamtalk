@@ -29,7 +29,7 @@ const signupAccount = async (req, res) => {
         return
     }
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    const defaultPictureFileName = username + email
+    const defaultPictureFileName = username + email + Date.now()
     const defaultPictureBuffer = convertToBuffer(defaultPictureData)
     const newUser = new User({
         username,
