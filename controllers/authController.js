@@ -19,7 +19,6 @@ const authenticateUser = (req, res, next) => {
     try{
         const decoded = jwt.verify(token, process.env.secret_key);
         req.user = decoded;
-        console.log(req.user)
         next();
     }
     catch(err){
@@ -36,7 +35,6 @@ const getUserInformation = (req, res) => {
                 console.log(err)
                 return res.status(500).send(err);
             }
-            console.log(userInformation)
             const params = {
                 Bucket: process.env.aws_bucket_name,
                 Key: userInformation.pictureFileName
@@ -47,7 +45,6 @@ const getUserInformation = (req, res) => {
                     return res.status(500).send({ message: err });
                 }
                 let url = `https://d32zqk6sk572zp.cloudfront.net/${userInformation.pictureFileName}`
-                console.log(url)
                 res.send({ 
                     message: "Valid and get account data successfully.",
                     id: user.id,
@@ -67,7 +64,6 @@ const editAccountUsername = async (req, res) => {
     try{
         const user = req.user;
         const newUsername = req.body.newUsername;
-        console.log(newUsername)
         User.findByIdAndUpdate(user.id, { $set: { username: newUsername, updatedAt: Date.now() } }, { new: true }, (err, updatedUser) => {
             if(err){
                 console.log(err)
@@ -88,7 +84,6 @@ const uploadAccountPicture = async (req, res) => {
     try{
         const user = req.user;
         const file = req.file;
-        console.log(file)
         const fileName = Date.now() + '_' + user.id + '_' + file.originalname;
         const fileContent = file.buffer;
         const params = {
@@ -111,7 +106,6 @@ const uploadAccountPicture = async (req, res) => {
                 return res.status(500).send(err);
             }
             res.json({ message: "ok", updatedPicture });
-            console.log(updatedPicture)
         });
         
     } 

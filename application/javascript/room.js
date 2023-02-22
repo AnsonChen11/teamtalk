@@ -31,18 +31,17 @@ let roomIdUrl = window.location.pathname;
 let myStream;
 let myUserId;
 let isInRoom = false;
-let username;
-let pictureUrl;
+let myUsername;
+let myPictureUrl;
 let myAudioIsMuted = false;
 let myVideoIsStopped = false;
 
 async function prepareMeeting(){
     const authData = await utils.authenticateAndGetData();
     const preMeetingVideo = document.getElementById("premeeting__video");
-    username = authData.username;
-    pictureUrl = authData.pictureUrl;
-    console.log(username, pictureUrl)
-    premeetingProfilePic.src = pictureUrl
+    myUsername = authData.username;
+    myPictureUrl = authData.pictureUrl;
+    premeetingProfilePic.src = myPictureUrl
     myStream = await getUserMedia(preMeetingVideo)
     preMeetingAudioBtn.disabled = false;
     preMeetingVideoBtn.disabled = false;
@@ -53,16 +52,15 @@ async function prepareMeeting(){
 async function joinRoom(){
     const myStream = await prepareMeeting();
     isInRoom = true;
-    const video = await createUserSections(myUserId, "You", pictureUrl);
+    const video = await createUserSections(myUserId, "You", myPictureUrl);
     await addVideoStream(video, myStream);
-    // addVideoStream(createUserSections(myUserId, username, pictureUrl), myStream)
-    socket.emit("joinRoom", roomId, myUserId, username, myAudioIsMuted, myVideoIsStopped);
+    socket.emit("joinRoom", roomId, myUserId, myUsername, myAudioIsMuted, myVideoIsStopped, myPictureUrl);
     
     const myUserSection = document.getElementById(`${myUserId}`);
     const myAudioIcon = myUserSection.querySelector(".fa-microphone")
     const myAudioSlashIcon = myUserSection.querySelector(".fa-microphone-slash")
     const profilePicGrid = myUserSection.querySelector(".profile_pic_grid")
-    const profileUrl = myUserSection.querySelector(".profile_pic").src
+    // const profileUrl = myUserSection.querySelector(".profile_pic").src
     const videoIcon = document.querySelector(".videoIcon")
     const videoSlashIcon = document.querySelector(".videoSlashIcon")
     if(myAudioIsMuted){
@@ -221,7 +219,9 @@ function createUserSections(userId, username, pictureUrl){
 //(remote視角)其他 myPeer物件向該myPeer發出呼叫時觸發。呼叫時，其他myPeer物件會建立一個call物件
 myPeer.on("call", call => { 
     console.log("someone call me", call.peer);
-    const { username } = call.metadata; // Extract userId and username from metadata
+    const { username, pictureUrl } = call.metadata; // Extract userId and username from metadata
+    console.log(username, pictureUrl)
+    console.log(call.metadata)
     const userId = call.peer
     //此為分享畫面的串流，做特殊處理
     if(call.metadata.type === "screen-sharing"){ 
@@ -265,15 +265,16 @@ myPeer.on("call", call => {
     }
 })
 /*-------------------------------(local)監聽使用者連線----------------------------------------------*/
-socket.on("userConnected", (userId, username, isAudioMuted, isVideoStopped) => {
+socket.on("userConnected", (userId, username, isAudioMuted, isVideoStopped, pictureUrl) => {
     console.log("Local的音視訊狀況", myAudioIsMuted, myVideoIsStopped)
     const call = myPeer.call(
         userId, //remoteId
         myStream, //localStream, sent to remote
-        {metadata: 
+        {metadata: //localData
             {
                 type: "join-room",
-                username: username,
+                username: myUsername,
+                pictureUrl: myPictureUrl,
                 mediaStatus: {
                     isAudioMuted: myAudioIsMuted, 
                     isVideoStopped: myVideoIsStopped
@@ -281,9 +282,6 @@ socket.on("userConnected", (userId, username, isAudioMuted, isVideoStopped) => {
             }
         }
     ); 
-    console.log(myStream)
-    console.log(isAudioMuted)
-    console.log(isVideoStopped)
     let count = 0;
     call.on("stream", (remoteStream) => { //remoteId received and sent remoteStream to local
         count = count + 1;
@@ -291,6 +289,7 @@ socket.on("userConnected", (userId, username, isAudioMuted, isVideoStopped) => {
             return
         } 
         else {
+            //將遠端的資料及視訊加入到本地
             console.log("收到對方接受回傳stream ", remoteStream)
             const video = createUserSections(userId, username, pictureUrl)
             const userSection = document.getElementById(`${userId}`);
@@ -632,9 +631,9 @@ socket.on("removeScreenStream", () => {
 chatToggle.addEventListener("click", () => {
     if(sectionChat.style.display === "none") {
         sectionChat.style.display = "block";
-        sectionVideo.style.width = "75%";
-        controlsVideo.style.width = "75%";
-        sectionChat.style.width = "25%";
+        sectionVideo.style.width = "77%";
+        controlsVideo.style.width = "77%";
+        sectionChat.style.width = "23%";
     }
     else{
         sectionChat.style.display = "none";
@@ -646,11 +645,12 @@ chatToggle.addEventListener("click", () => {
 const chatInput = document.getElementById("chat__input");
 chatInput.addEventListener("keydown", (e) => {
     if(e.key === "Enter" && chatInput.value.length !== 0){
-        socket.emit("chatMessage", chatInput.value);
+        socket.emit("chatMessage", myUsername, chatInput.value);
         chatInput.value = "";
     };
 });
 
+const chatWindow = document.querySelector(".chat__window");
 const messagesBorder = document.querySelector(".messagesBorder");
 // const messageTime = document.querySelectorAll(".messageTime");
 let lastUserId = "";
@@ -681,8 +681,19 @@ socket.on("createMessage", (message, userId, username) => {
                     ${message}
             </li>
         </div>`;
+    chatWindow.scrollTop = chatWindow.scrollHeight;
 });
 
+// let scrolled = false;
+// function updateScroll(){
+//     if(!scrolled){
+//         chatWindow.scrollTop = chatWindow.scrollHeight;
+//     }
+// }
+// window.onscroll = function (e) {  
+//     scrolled = true;
+// } 
+// console.log(scrolled)
 /*-------------------------------螢幕錄影----------------------------------------------*/
 videoRecord.addEventListener("click", async() => {
     const screenRecordStream = await navigator.mediaDevices.getDisplayMedia({ 
@@ -771,8 +782,8 @@ whiteboardBtn.addEventListener("click", () => {
 // initialize canvas element
 const canvas = document.querySelector("canvas")
 const ctx = canvas.getContext("2d");
-canvas.width = 1200;
-canvas.height = 680;
+canvas.width = 1120;
+canvas.height = 620;
 ctx.fillStyle = "#FFFFFF";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 // set up mouse event listeners

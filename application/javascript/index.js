@@ -3,6 +3,7 @@ const loginBtn = document.querySelector(".loginBtn");
 const signupBtn = document.querySelector(".signupBtn");
 const launchMeeting = document.getElementById("launchMeeting");
 const inputRoomCode = document.getElementById("inputRoomCode");
+const joinBtn = document.getElementById("joinButton");
 const accountBtn = document.querySelector(".accountBtn");
 const accountBtnImg = document.querySelector(".accountBtnImg");
 const accountDropdown = document.querySelector(".account__dropdown");
@@ -25,6 +26,7 @@ const profilePictureEditCancel = document.querySelector(".profilePicture__edit__
 const overlay = document.querySelector(".overlay");
 
 let username;
+let email;
 /*----------------------------------check user login or not----------------------------------*/
 async function authenticationForIndex(){
     let token = getCookie("token"); 
@@ -54,6 +56,7 @@ async function authenticationForIndex(){
             accountBtn.textContent = data.username[0].toUpperCase()
             usernameEditName.textContent = data.username;
             username = data.username;
+            email = data.email;
             profilePic.src = data.pictureUrl
             declineProfilePic(data.pictureUrl)
         })
@@ -102,10 +105,7 @@ accountProfileEdit.addEventListener("click", () => {
 });
 
 accountHostMeeting.addEventListener("click", () => {
-    fetch("/newMeeting", { method: "POST" })
-    .then(response => {
-        window.location.href = response.url;
-    });
+    createRoom()
 })
 
 /*---------------------------------- profile edit section addEventListener event----------------------------------*/
@@ -294,19 +294,101 @@ function createDefaultPictureBlob(username){
 }
 /*----------------------------------launch and join meeting addEventListener event----------------------------------*/
 launchMeeting.addEventListener("click", () => {
-    fetch("/newMeeting", { method: "POST" })
-    .then(response => {
-        window.location.href = response.url;
-    });
-})
+    createRoom()
+});
 
-// inputRoomCode.addEventListener("keydown", (e) => {
-//     console.log(inputRoomCode.value)
-//     if(e.key === "Enter" && inputRoomCode.value == 123){
-//         window.location.href = "/123"
-//     };
-// });
+async function createRoom(){
+    try{
+        await fetch("/room", {
+            method: "POST",
+            body: JSON.stringify({ username: username, email: email }),
+			headers: { "Content-Type": "application/json" }
+        })
+        .then(response => {
+            if(!response.ok){
+			    return
+		    }
+            return response.json()
+        })
+        .then(data => {
+            roomId = data.roomId
+            window.location.href = `/room/${roomId}`;
+        })
+    }
+    catch(err){
+        console.log(err);
+    }
+}
 
+async function joinRoomByCode(roomCode){
+    try{
+        fetch(`/room/${roomCode}`,{ 
+            method: "GET",
+            headers: { "Accept": "application/json" } 
+        })
+        .then(response => {
+            if(!response.ok){
+                alert("Couldn't find the room");
+                return
+		    }
+            else{
+                window.location.href = `/room/${roomCode}`
+            }
+        })
+    }
+    catch(err){
+        console.log(err);
+    }
+};
+
+inputRoomCode.addEventListener("keydown", (e) => {
+    roomCode = inputRoomCode.value
+    if(e.key === "Enter" && roomCode !== "" ){
+        joinRoomByCode(roomCode)
+    }
+});
+
+joinBtn.addEventListener("click", () => {
+    roomCode = inputRoomCode.value
+    joinRoomByCode(roomCode)
+});
+        // window.location.href = response.url;
+
+
+inputRoomCode.addEventListener("focus", () => {
+    joinBtn.style.display = "flex";
+});
+
+// 當 input 框 blur 時，檢查是否有輸入文字，若沒有則隱藏 Join 按鈕
+inputRoomCode.addEventListener("blur", () => {
+    if(!inputRoomCode.value.trim()){
+        joinBtn.style.display = "none";
+    }
+});
+// 監聽 input 框的鍵盤事件，每次輸入都檢查是否要顯示 Join 按鈕
+inputRoomCode.addEventListener("keyup", () => {
+    if(inputRoomCode.value.trim()){
+        joinBtn.style.display = "flex";
+        joinBtn.style.color = "#1a73e8";
+    }
+    else{
+        joinBtn.style.display = "none";
+        // joinBtn.style.color = "rgb(34, 34, 115)";
+    }
+});
+inputRoomCode.addEventListener("input", (e) => {
+    if (e.target.value.trim() !== ""){
+        joinBtn.style.opacity = "1";
+        joinBtn.style.cursor = "pointer";
+        joinBtn.style.pointerEvents = "auto";
+        
+    } 
+    else{
+        joinBtn.style.opacity = "0.3";
+        joinBtn.style.cursor = "default";
+        joinBtn.style.pointerEvents = "none";
+    }
+});
 /*----------------------------------user logout----------------------------------*/
 function userLogout(){
     const headers = {

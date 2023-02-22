@@ -307,6 +307,8 @@ nav{
 
 .main__launch{
     margin-top: 30px;
+    display: flex;
+    align-items: center;
 }
 
 .main__launch button{
@@ -331,6 +333,7 @@ nav{
     border-radius: 5px;
     box-sizing: border-box;
     padding-left: 10px;
+    font-size: 16px;
 }
 
 .main__launch input:focus{
@@ -340,4 +343,21 @@ nav{
 
 .main__launch input::placeholder{
     font-weight: 700;
+}
+
+.joinButton{
+    margin-left: 20px;
+    color: rgb(164, 164, 164);
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.joinButton:hover{
+    color: #1a73e8;
+    cursor: pointer;
+    /* background-color: rgba(212, 234, 254, 0.219); */
 }
