@@ -673,14 +673,15 @@ socket.on("createMessage", (message, userId, username) => {
         }
         lastUserId = userId;
     }
-    messagesBorder.innerHTML = messagesBorder.innerHTML + `
-        <div class="messages" ${messagePosition}>
-            <li class="messageUser" ${usernameDisplay}>${username}</li>
-            <li class="message" style="background-color:${myUsernameColor};">
-                <div class="messageTime" ${messageTimePosition}>${time}</div>
-                    ${message}
-            </li>
-        </div>`;
+    messagesBorder.insertAdjacentHTML('beforeend', `
+    <div class="messages" ${messagePosition}>
+        <li class="messageUser" ${usernameDisplay}>${username}</li>
+        <li class="message" style="background-color:${myUsernameColor};">
+            <div class="messageTime" ${messageTimePosition}>${time}</div>
+                ${message}
+        </li>
+    </div>`
+    );
     chatWindow.scrollTop = chatWindow.scrollHeight;
 });
 
