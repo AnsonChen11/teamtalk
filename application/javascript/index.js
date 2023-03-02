@@ -275,10 +275,10 @@ function createDefaultPictureBlob(username){
     ctx.fillRect(0, 0, 600, 400);
 
     // 文字
-    ctx.font = "144px sans-serif";
+    ctx.font = "288px sans-serif";
     ctx.textAlign = "center";
     ctx.fillStyle = "white";
-    ctx.fillText(username[0].toUpperCase(), 300, 250);
+    ctx.fillText(username[0].toUpperCase(), 300, 310);
 
     const defaultPictureData  = canvas.toDataURL();
     const byteString = atob(defaultPictureData.split(",")[1]);

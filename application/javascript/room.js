@@ -53,16 +53,23 @@ async function joinRoom(){
     const myStream = await prepareMeeting();
     isInRoom = true;
     const video = await createUserSections(myUserId, "You", myPictureUrl);
+    createParticipationSection(myUserId, "You", myPictureUrl)
     await addVideoStream(video, myStream);
     socket.emit("joinRoom", roomId, myUserId, myUsername, myAudioIsMuted, myVideoIsStopped, myPictureUrl);
     
     const myUserSection = document.getElementById(`${myUserId}`);
-    const myAudioIcon = myUserSection.querySelector(".fa-microphone")
-    const myAudioSlashIcon = myUserSection.querySelector(".fa-microphone-slash")
-    const profilePicGrid = myUserSection.querySelector(".profile_pic_grid")
+    const myAudioIcon = myUserSection.querySelector(".fa-microphone");
+    const myAudioSlashIcon = myUserSection.querySelector(".fa-microphone-slash");
+    const profilePicGrid = myUserSection.querySelector(".profile_pic_grid");
     // const profileUrl = myUserSection.querySelector(".profile_pic").src
     const videoIcon = document.querySelector(".videoIcon")
     const videoSlashIcon = document.querySelector(".videoSlashIcon")
+    const myParticipationBorder = document.getElementById(`${myUserId}-participation`);
+    const myParticipationAudioIcon = myParticipationBorder.querySelector(".fa-microphone");
+    const myParticipationAudioSlashIcon = myParticipationBorder.querySelector(".fa-microphone-slash");
+    const myParticipationVideoIcon = myParticipationBorder.querySelector(".fa-video")
+    const myParticipationVideoSlashIcon = myParticipationBorder.querySelector(".fa-video-slash")
+
     if(myAudioIsMuted){
         const audioTrack = myStream.getAudioTracks()[0]; 
         audioTrack.enabled = false;
@@ -71,6 +78,8 @@ async function joinRoom(){
         myAudioSlashIcon.style.display = "block";
         audioIcon.style.display = "none";
         audioSlashIcon.style.display = "block";
+        myParticipationAudioIcon.style.display = "none";
+        myParticipationAudioSlashIcon.style.display = "block";
     }
     if(myVideoIsStopped){
         const videoTrack = myStream.getVideoTracks()[0]; 
@@ -79,6 +88,8 @@ async function joinRoom(){
         videoIcon.style.display = "none";
         videoSlashIcon.style.display = "block";
         profilePicGrid.style.display = "flex";
+        myParticipationVideoIcon.style.display = "none";
+        myParticipationVideoSlashIcon.style.display = "block";
     }
 };
 
@@ -90,6 +101,7 @@ preMeetingAudioBtn.addEventListener("click", () => {
     preMeetingAudioBtn.style.border = microphone.style.display === "none" ? "none" : "";
     toggleAudio()
 });
+
 preMeetingVideoBtn.addEventListener("click", () => {
     videoCamera.style.display = videoCamera.style.display === "none" ? "" : "none";
     videoText.textContent = videoCamera.style.display === "none" ? "Stop video" : "Video";
@@ -99,6 +111,7 @@ preMeetingVideoBtn.addEventListener("click", () => {
     premeetingProfileSection.style.display = videoCamera.style.display === "none" ? "" : "none";
     toggleVideo()
 });
+
 preMeetingJoinBtn.addEventListener("click", () => {
     beforeJoinTheMeet.style.display = "none";
     sectionVideo.style.display = "block";
@@ -137,7 +150,6 @@ function toggleVideo() {
 
 async function getUserMedia(video){
     try{
-        
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         // myStream = stream;
         addVideoStream(video, stream);
@@ -215,6 +227,7 @@ function createUserSections(userId, username, pictureUrl){
 
 
 
+
 /*--------------------------監聽是否有新成員收到連接請求，若有責會發出"call"事件，並回答通話(call.answer)-----------------------------*/
 //(remote視角)其他 myPeer物件向該myPeer發出呼叫時觸發。呼叫時，其他myPeer物件會建立一個call物件
 myPeer.on("call", call => { 
@@ -248,16 +261,26 @@ myPeer.on("call", call => {
             else{
                 //加入remote視角的remote(其他使用者)的stream
                 const video = createUserSections(userId, username, pictureUrl)
+                createParticipationSection(userId, username, pictureUrl)
                 const userSection = document.getElementById(`${userId}`);
                 const audioIcon = userSection.querySelector(".fa-microphone")
                 const audioSlashIcon = userSection.querySelector(".fa-microphone-slash")
                 const profilePicGrid = userSection.querySelector(".profile_pic_grid")
+                const participationBorder = document.getElementById(`${userId}-participation`);
+                const participationAudioIcon = participationBorder.querySelector(".fa-microphone");
+                const participationAudioSlashIcon = participationBorder.querySelector(".fa-microphone-slash");
+                const participationVideoIcon = participationBorder.querySelector(".fa-video")
+                const participationVideoSlashIcon = participationBorder.querySelector(".fa-video-slash")
                 if(call.metadata.mediaStatus.isAudioMuted){
                     audioIcon.style.display = "none";
                     audioSlashIcon.style.display = "block";
+                    participationAudioIcon.style.display = "none";
+                    participationAudioSlashIcon.style.display = "block";
                 }
                 if(call.metadata.mediaStatus.isVideoStopped){
                     profilePicGrid.style.display = "flex"
+                    participationVideoIcon.style.display = "none"
+                    participationVideoSlashIcon.style.display = "block";
                 }
                 addVideoStream(video, remoteStream);
             }
@@ -292,16 +315,26 @@ socket.on("userConnected", (userId, username, isAudioMuted, isVideoStopped, pict
             //將遠端的資料及視訊加入到本地
             console.log("收到對方接受回傳stream ", remoteStream)
             const video = createUserSections(userId, username, pictureUrl)
+            createParticipationSection(userId, username, pictureUrl)
             const userSection = document.getElementById(`${userId}`);
             const audioIcon = userSection.querySelector(".fa-microphone")
             const audioSlashIcon = userSection.querySelector(".fa-microphone-slash")
             const profilePicGrid = userSection.querySelector(".profile_pic_grid")
+            const participationBorder = document.getElementById(`${userId}-participation`);
+            const participationAudioIcon = participationBorder.querySelector(".fa-microphone");
+            const participationAudioSlashIcon = participationBorder.querySelector(".fa-microphone-slash");
+            const participationVideoIcon = participationBorder.querySelector(".fa-video")
+            const participationVideoSlashIcon = participationBorder.querySelector(".fa-video-slash")
             if(isAudioMuted){
                 audioIcon.style.display = "none";
                 audioSlashIcon.style.display = "block";
+                participationAudioIcon.style.display = "none";
+                participationAudioSlashIcon.style.display = "block";
             }
             if(isVideoStopped){
                 profilePicGrid.style.display = "flex";
+                participationVideoIcon.style.display = "none";
+                participationVideoSlashIcon.style.display = "block";
             }
             addVideoStream(video, remoteStream)
         }
@@ -403,10 +436,10 @@ socket.on("userDisconnected", (userId) => {
         console.log("斷開連線")
         const userSection = document.getElementById(userId);
         const video = document.getElementById(userId + "-video");
-        console.log(userSection)
-        console.log(video)
-        if (userSection) userSection.remove();
-        if (video) video.remove();
+        const participationBorder = document.getElementById(`${userId}-participation`);
+        if(userSection) userSection.remove();
+        if(video) video.remove();
+        if(participationBorder) participationBorder.remove();
         // videoCount--;
         updateGridTemplate();
     }
@@ -427,6 +460,8 @@ const shareScreen = document.getElementById("video__shareScreen");
 const chatToggle = document.getElementById("video__chat");
 const disconnect = document.getElementById("video__disconnect");
 const sectionChat = document.getElementById("section__chat");
+const participationToggle = document.getElementById("participation__btn");
+const sectionParticipation = document.getElementById("section__participation");
 const sectionVideo = document.querySelector(".section__video");
 // const controlsVideo = document.querySelector(".controls__video");
 const whiteboardBtn = document.getElementById("whiteboard__btn");
@@ -437,42 +472,57 @@ audioMute.addEventListener("click", () => {
     const audioTrack = myStream.getAudioTracks()[0]; 
     const myAudioIcon = myUserSection.querySelector(".fa-microphone")
     const myAudioSlashIcon = myUserSection.querySelector(".fa-microphone-slash")
+
+    const myParticipationBorder = document.getElementById(`${myUserId}-participation`);
+    const myParticipationAudioIcon = myParticipationBorder.querySelector(".fa-microphone");
+    const myParticipationAudioSlashIcon = myParticipationBorder.querySelector(".fa-microphone-slash");
     // const audioIcon = controlsVideo.querySelector(".fa-microphone")
     // const audioSlashIcon = controlsVideo.querySelector(".fa-microphone-slash")
     if(audioTrack.enabled === true){
         audioTrack.enabled = false;
         myAudioIsMuted = true
         audioMute.style.backgroundColor = "rgb(192, 13, 13)";
-        myAudioIcon.style.display = "none";
         audioIcon.style.display = "none";
-        myAudioSlashIcon.style.display = "block";
         audioSlashIcon.style.display = "block";
+        myAudioIcon.style.display = "none";
+        myAudioSlashIcon.style.display = "block";
+        myParticipationAudioIcon.style.display = "none";
+        myParticipationAudioSlashIcon.style.display = "block";
         socket.emit("audioStatus", myUserId, {muted: true})
     }
     else{
         audioTrack.enabled = true;
         myAudioIsMuted = false
         audioMute.style.backgroundColor = "rgb(82, 83, 83)";
-        myAudioIcon.style.display = "block";
         audioIcon.style.display = "block";
-        myAudioSlashIcon.style.display = "none";
         audioSlashIcon.style.display = "none";
+        myAudioIcon.style.display = "block";
+        myAudioSlashIcon.style.display = "none";
+        myParticipationAudioIcon.style.display = "block";
+        myParticipationAudioSlashIcon.style.display = "none";
         socket.emit("audioStatus", myUserId, {muted: false});
     }
 });
 
 socket.on("audioStatusControl", (id, audioStatus) => {
     const remoteId = document.getElementById(id);
-    console.log("audioStatusControl", id, audioStatus)
     const remoteAudioIcon = remoteId.querySelector(".fa-microphone");
     const remoteAudioSlashIcon = remoteId.querySelector(".fa-microphone-slash");
+    const remoteParticipationBorder = document.getElementById(`${id}-participation`);
+    console.log(remoteParticipationBorder)
+    const remoteParticipationAudioIcon = remoteParticipationBorder.querySelector(".fa-microphone");
+    const remoteParticipationAudioSlashIcon = remoteParticipationBorder.querySelector(".fa-microphone-slash");
     if(audioStatus.muted === true){
         remoteAudioIcon.style.display = "none";
         remoteAudioSlashIcon.style.display = "block";
+        remoteParticipationAudioIcon.style.display = "none";
+        remoteParticipationAudioSlashIcon.style.display = "block";
     }
     else {
         remoteAudioIcon.style.display = "block";
         remoteAudioSlashIcon.style.display = "none";
+        remoteParticipationAudioIcon.style.display = "block";
+        remoteParticipationAudioSlashIcon.style.display = "none";
     }
 });
 
@@ -484,6 +534,9 @@ videoStop.addEventListener("click", () => {
     const videoTrack = myStream.getVideoTracks()[0]; 
     const videoIcon = document.querySelector(".videoIcon")
     const videoSlashIcon = document.querySelector(".videoSlashIcon")
+    const myParticipationBorder = document.getElementById(`${myUserId}-participation`);
+    const myParticipationVideoIcon = myParticipationBorder.querySelector(".fa-video")
+    const myParticipationVideoSlashIcon = myParticipationBorder.querySelector(".fa-video-slash")
     console.log(videoTrack.enabled)
     if(videoTrack.enabled === true){
         videoTrack.enabled = false;
@@ -492,6 +545,8 @@ videoStop.addEventListener("click", () => {
         videoIcon.style.display = "none";
         videoSlashIcon.style.display = "block";
         profilePicGrid.style.display = "flex";
+        myParticipationVideoIcon.style.display = "none";
+        myParticipationVideoSlashIcon.style.display = "block";
         // videoTrack.stop();
         socket.emit("videoStop", myUserId, profileUrl)
     }
@@ -501,6 +556,8 @@ videoStop.addEventListener("click", () => {
         videoStop.style.backgroundColor = "rgb(82, 83, 83)";
         videoIcon.style.display = "block";
         videoSlashIcon.style.display = "none";
+        myParticipationVideoIcon.style.display = "block";
+        myParticipationVideoSlashIcon.style.display = "none";
         const myVideo = document.getElementById(`${myUserId}-video`);
         console.log(myVideo);
         getUserMedia(myVideo);
@@ -514,18 +571,26 @@ videoStop.addEventListener("click", () => {
 socket.on("videoStopControl", (id, profileUrl) => {
     console.log(id, profileUrl)
     const remoteUserSection = document.getElementById(id);
-    const remoteProfilePicGrid = remoteUserSection.querySelector(".profile_pic_grid")
-    const remoteProfile_pic = remoteUserSection.querySelector(".profile_pic")
+    const remoteProfilePicGrid = remoteUserSection.querySelector(".profile_pic_grid");
+    const remoteProfile_pic = remoteUserSection.querySelector(".profile_pic");
+    const remoteParticipationBorder = document.getElementById(`${id}-participation`);
+    const remoteParticipationVideoIcon = remoteParticipationBorder.querySelector(".fa-video");
+    const remoteParticipationVideoSlashIcon = remoteParticipationBorder.querySelector(".fa-video-slash");
     remoteProfile_pic.src = profileUrl
     remoteProfilePicGrid.style.display = "flex";
+    remoteParticipationVideoIcon.style.display = "none";
+    remoteParticipationVideoSlashIcon.style.display = "block";
 });
 
 socket.on("videoOpenControl", (id) => {
     const remoteUserSection = document.getElementById(id);
     const remoteProfilePicGrid = remoteUserSection.querySelector(".profile_pic_grid");
-    // const remoteVideo = document.getElementById(`${id}-video`);
-    // addVideoStream(remoteVideo, remoteStream);
+    const remoteParticipationBorder = document.getElementById(`${id}-participation`);
+    const remoteParticipationVideoIcon = remoteParticipationBorder.querySelector(".fa-video");
+    const remoteParticipationVideoSlashIcon = remoteParticipationBorder.querySelector(".fa-video-slash");
     remoteProfilePicGrid.style.display = "none";
+    remoteParticipationVideoIcon.style.display = "block";
+    remoteParticipationVideoSlashIcon.style.display = "none";
 });
 /*-------------------------------分享螢幕畫面----------------------------------------------*/
 let isScreenSharing = false;
@@ -629,15 +694,22 @@ socket.on("removeScreenStream", () => {
 
 /*-------------------------------聊天室----------------------------------------------*/
 chatToggle.addEventListener("click", () => {
-    if(sectionChat.style.display === "none") {
+    if(sectionChat.style.display === "none"){
         sectionChat.style.display = "block";
-        sectionVideo.style.width = "77%";
-        controlsVideo.style.width = "77%";
-        sectionChat.style.width = "23%";
+        if(sectionParticipation.style.display !== "none"){
+            sectionParticipation.style.display = "none";
+            sectionVideo.style.flex = "77%";
+            controlsVideo.style.width = "77%";
+        }
+        else{
+          sectionVideo.style.flex = "77%";
+          controlsVideo.style.width = "77%";
+        }
+        sectionChat.style.flex = "23%";
     }
     else{
         sectionChat.style.display = "none";
-        sectionVideo.style.width = "100%";
+        sectionVideo.style.flex = "100%";
         controlsVideo.style.width = "100%";
     }
 });
@@ -685,16 +757,50 @@ socket.on("createMessage", (message, userId, username) => {
     chatWindow.scrollTop = chatWindow.scrollHeight;
 });
 
-// let scrolled = false;
-// function updateScroll(){
-//     if(!scrolled){
-//         chatWindow.scrollTop = chatWindow.scrollHeight;
-//     }
-// }
-// window.onscroll = function (e) {  
-//     scrolled = true;
-// } 
-// console.log(scrolled)
+/*-------------------------------participation---------------------------------------------*/
+const participationWindow = document.querySelector(".participation__window")
+
+participationToggle.addEventListener("click", () => {
+    if(sectionParticipation.style.display === "none"){
+        sectionParticipation.style.display = "block";
+        sectionParticipation.style.width = "20%";
+        if(sectionChat.style.display !== "none"){
+            sectionChat.style.display = "none";
+            sectionVideo.style.flex = "80%";
+            controlsVideo.style.width = "80%";
+        } 
+        else{
+            sectionVideo.style.flex = "80%";
+            controlsVideo.style.width = "80%";
+        }
+    } 
+    else{
+        sectionParticipation.style.display = "none";
+        sectionVideo.style.flex = "100%";
+        controlsVideo.style.width = "100%";
+    }
+});
+
+function createParticipationSection(userId, username, pictureUrl){
+    const participationHTML = `
+        <ul class="participationBorder" id="${userId}-participation">
+            <li class="participation">
+                <div class="participation_profile">
+                    <div class="participation__pic__container">
+                        <img src=${pictureUrl}>
+                    </div>
+                    <div class="participation__username">${username}</div>
+                </div>
+                <div class="participation__media">
+                    <div class="participation__media__icon"><i class="fa-solid fa-microphone"></i><i class="fa-solid fa-microphone-slash" style="display:none;"></i></div>
+                    <div class="participation__media__icon"><i class="fa-solid fa-video"></i><i class="fa-solid fa-video-slash videoSlashIcon" style="display:none;"></i></div>
+                </div> 
+            </li>
+        </ul>
+    `
+    participationWindow.insertAdjacentHTML("beforeend", participationHTML)
+}
+
 /*-------------------------------螢幕錄影----------------------------------------------*/
 videoRecord.addEventListener("click", async() => {
     const screenRecordStream = await navigator.mediaDevices.getDisplayMedia({ 
