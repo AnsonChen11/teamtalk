@@ -243,6 +243,24 @@ video{
     /* display: none; */
 }
 
+.participation__nav, .chat__nav{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.participation__close, .chat__close{
+    color: #acacac;
+    position: absolute;
+    left: 100%;
+    transform: translate(-200%, 0%);
+}
+
+.participation__close:hover, .chat__close:hover{
+    color: #e3e3e3;
+    cursor: pointer;
+}
+
 .participation__window{
     height: calc(100vh - 116px);
     overflow-y: auto;
@@ -318,15 +336,17 @@ video{
 }
 .chat__input{
     height: 72px;
+    display: flex;
+    align-items: center;
+    border-top: 1px solid #acacac;
 }
 .chat__input > input{
     height: 100%;
-    width: 23%;
+    width: 21%;
     word-wrap: break-word;
     box-sizing: border-box;
     padding: 10px;
     border-style: none;
-    border-top: 1px solid #acacac;
     background-color: rgb(30, 30, 30);
     color: #acacac;
     font-weight: 500;
@@ -334,16 +354,24 @@ video{
 .chat__input > input:focus{
     outline: none;
 }
-/* .chat__input > input[type="text"]{
-        caret-color: #acacac;
-} */
+
 .chat__input > input::placeholder {
     color: #acacac;
     font-weight: 500;
 }
-/* .messagesBorder{
-    overflow:auto;
-} */
+
+.sendMessage{
+    width: 2%;
+    display: flex;
+    justify-content: center;
+    color: white;
+}
+
+.sendMessage:hover{
+    cursor: pointer;
+    color: #0372c9;
+}
+
 .messageUser, .messageTime{
     color: rgb(200 200 200);
     list-style-type: none;
@@ -426,20 +454,79 @@ video{
     transition:  0.5s ease-in-out; /* 定義right屬性的過渡效果 */
 }
 
+#canvas-container{
+    position: relative;
+}
+
+.page-controls{
+    position: absolute;
+    left: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: translate(-50%, 50%);
+}
+
+.whiteboard__close{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    left: 100%;
+    transform: translate(-200%, 90%);
+    color: #b8b8b8;
+}
+
+.whiteboard__close:hover{
+    cursor: pointer;
+    color: #acacac;
+}
+
+#prev-page-btn{
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #b8b8b8;
+}
+
+#next-page-btn{
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #b8b8b8;
+}
+
+#prev-page-btn:hover, #next-page-btn:hover{
+    background-color: #69696939;
+    cursor: pointer;
+}
+
+#current-page{
+    margin: 0 5px 2px 5px;
+    color: #858585;
+    font-size: 12px;
+}
 
 .toolsBar{
     width: 40px;
     height: 300px;
     background-color: rgb(251 251 251);
     border: 1px solid #f3f3f3;
-    position: relative;
-    left: 21px;
+    position: absolute;
     border-radius: 32px;
+    top: 50%;
     display: flex;
     flex-direction: column;
+    transform: translate(-50%, -50%);
     justify-content: space-evenly;
     align-items: center;
-    box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: 2px 2px 2px 1px rgb(0 0 0 / 20%);
 }
 
 .tools{
@@ -462,6 +549,7 @@ video{
 
 .palette{
     position: relative;
+    color: #f09d40;
 }
 
 .palette__menu{
@@ -625,4 +713,12 @@ video{
   /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover{
     background: #484848;
+}
+
+.canvas{
+    display: none;
+}
+  
+.canvas.active{
+    display: block;
 }

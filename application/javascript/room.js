@@ -373,7 +373,6 @@ document.addEventListener("click", (e) => {
                 updateGridTemplate()
             })
         }
-
     }
 });
 
@@ -465,6 +464,9 @@ const sectionParticipation = document.getElementById("section__participation");
 const sectionVideo = document.querySelector(".section__video");
 // const controlsVideo = document.querySelector(".controls__video");
 const whiteboardBtn = document.getElementById("whiteboard__btn");
+const whiteboardCloseBtn = document.querySelector(".whiteboard__close");
+const chatCloseBtn = document.querySelector(".chat__close");
+const participationCloseBtn = document.querySelector(".participation__close");
 /*-------------------------------控制音訊開關----------------------------------------------*/
 audioMute.addEventListener("click", () => {
     const myUserSection = document.getElementById(`${myUserId}`);
@@ -714,13 +716,33 @@ chatToggle.addEventListener("click", () => {
     }
 });
 
+chatCloseBtn.addEventListener("click", () => {
+    sectionChat.style.display = "none";
+    sectionVideo.style.flex = "100%";
+    controlsVideo.style.width = "100%";
+});
+
 const chatInput = document.getElementById("chat__input");
 chatInput.addEventListener("keydown", (e) => {
-    if(e.key === "Enter" && chatInput.value.length !== 0){
+    if(chatInput.value.trim() === ""){
+        return;
+    }
+    if(e.key === "Enter" && chatInput.value.length !== 0 && chatInput.value !== ""){
         socket.emit("chatMessage", myUsername, chatInput.value);
         chatInput.value = "";
     };
 });
+
+const sendMessage = document.querySelector(".sendMessage");
+sendMessage.addEventListener("click", () => {
+    if(chatInput.value.trim() === ""){
+        return;
+    }
+    if(chatInput.value.length !== 0){
+        socket.emit("chatMessage", myUsername, chatInput.value);
+        chatInput.value = "";
+    };
+})
 
 const chatWindow = document.querySelector(".chat__window");
 const messagesBorder = document.querySelector(".messagesBorder");
@@ -781,6 +803,12 @@ participationToggle.addEventListener("click", () => {
     }
 });
 
+participationCloseBtn.addEventListener("click", () => {
+    sectionParticipation.style.display = "none";
+    sectionVideo.style.flex = "100%";
+    controlsVideo.style.width = "100%";
+});
+
 function createParticipationSection(userId, username, pictureUrl){
     const participationHTML = `
         <ul class="participationBorder" id="${userId}-participation">
@@ -792,8 +820,8 @@ function createParticipationSection(userId, username, pictureUrl){
                     <div class="participation__username">${username}</div>
                 </div>
                 <div class="participation__media">
-                    <div class="participation__media__icon"><i class="fa-solid fa-microphone"></i><i class="fa-solid fa-microphone-slash" style="display:none;"></i></div>
-                    <div class="participation__media__icon"><i class="fa-solid fa-video"></i><i class="fa-solid fa-video-slash videoSlashIcon" style="display:none;"></i></div>
+                    <div class="participation__media__icon"><i class="fa-solid fa-microphone" style="font-size: 16px;"></i><i class="fa-solid fa-microphone-slash fa-participation" style="display:none; font-size: 16px;"></i></div>
+                    <div class="participation__media__icon"><i class="fa-solid fa-video fa-participation" style="font-size: 16px;"></i><i class="fa-solid fa-video-slash videoSlashIcon fa-participation" style="display:none; font-size: 16px;"></i></div>
                 </div> 
             </li>
         </ul>
@@ -885,70 +913,74 @@ whiteboardBtn.addEventListener("click", () => {
         whiteboard.style.display = "none"
     }
 })
+
+whiteboardCloseBtn.addEventListener("click", () => {
+    whiteboard.style.display = "none"
+})
 /*-----------------------------------------whiteboard-----------------------------------------------*/
 // initialize canvas element
-const canvas = document.querySelector("canvas")
-const ctx = canvas.getContext("2d");
-canvas.width = 1120;
-canvas.height = 620;
-ctx.fillStyle = "#FFFFFF";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-// set up mouse event listeners
+const canvases = document.querySelectorAll(".canvas");
+const prevPageBtn = document.querySelector("#prev-page-btn");
+const nextPageBtn = document.querySelector("#next-page-btn");
+const currentPageEl = document.querySelector("#current-page");
+let currentPage = 1;
+let currentCanvasId;
 let drawing = false;
 let lastX = 0;
 let lastY = 0;
 let hue = 0; 
 let lightness = "60%";
 let lineWidth = 1;
- // array to store all drawings for undo/redo
-let drawings = [];
-// push the initial state of canvas into the array
-drawings.push(canvas.toDataURL());
-let undoArray = [];
+// let drawings = [];
+// let undoArray = [];
+const maxPages = 5;
+canvases.forEach(canvas => {
+    canvas.width = 1120;
+    canvas.height = 620;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // drawings.push(canvas.toDataURL());
+    
 
-// let isTextBoxMode = false; // 是否處於 textBox 模式下
-// let textBoxX, textBoxY; // 文字輸入框出現的位置
-// let isTyping = false;
-// let textBoxes = [];
-
-canvas.addEventListener("mousedown", (e) => {
-    lastX = e.offsetX;
-    lastY = e.offsetY;
-    drawing = true;
-    // if the text box is active, remove it when user clicks on canvas
-    // if (textBoxes.length > 0) {
-    //     const textBox = textBoxes[textBoxes.length - 1];
-    //     if (textBox.isActive) {
-    //         textBox.isActive = false;
-    //         textBoxes.pop();
-    //     }
-    // }
-});
-
-canvas.addEventListener("mousemove", (e) => {
-    if (drawing) {
-        draw(lastX, lastY, e.offsetX, e.offsetY, `hsl(${hue}, 100%, ${lightness})`, lineWidth);
+    canvas.addEventListener("mousedown", (e) => {
+        currentCanvasId = canvas.id;
+        console.log(currentCanvasId)
         lastX = e.offsetX;
         lastY = e.offsetY;
+        drawing = true;
+    });
+
+    canvas.addEventListener("mousemove", (e) => {
+        if(drawing){
+            draw(lastX, lastY, e.offsetX, e.offsetY, `hsl(${hue}, 100%, ${lightness})`, lineWidth, ctx, currentCanvasId, myUserId);
+            lastX = e.offsetX;
+            lastY = e.offsetY;
+        }
+    });
+
+    canvas.addEventListener("mouseup", () => {
+        drawing = false;
+        // drawings.push(canvas.toDataURL());
+        // socket.emit("updateDrawings", drawings)
+    });
+
+    canvas.addEventListener("mouseout", () => {
+        drawing = false;
+    });
+});
+
+socket.on("drawToRemote", (data) => {
+    console.log("收到drawToRemote事件")
+    if(data.userId !== myUserId){
+        const canvas = document.getElementById(data.canvasId);
+        const ctx = canvas.getContext("2d");
+        draw(data.lastX, data.lastY, data.x, data.y, data.color, data.lineWidth, ctx, data.canvasId, data.userId);
     }
 });
 
-canvas.addEventListener("mouseup", () => {
-    drawing = false;
-    drawings.push(canvas.toDataURL());
-    socket.emit("updateDrawings", drawings)
-});
-
-canvas.addEventListener("mouseout", () => {
-    drawing = false;
-});
-
-socket.on("draw", (data) => {
-    draw(data.lastX, data.lastY, data.x, data.y, data.color, data.lineWidth);
-});
-
 // draw function to draw lines on canvas
-function draw(lastX, lastY, x, y, color = `hsl(${hue}, 100%, ${lightness})`, lineWidth = 1) {
+function draw(lastX, lastY, x, y, color = `hsl(${hue}, 100%, ${lightness})`, lineWidth = 1, ctx, canvasId, userId) {
     ctx.beginPath(); //開始一條新的路徑
     ctx.moveTo(lastX, lastY); // 設置起點坐標
     ctx.lineTo(x, y); //繪製一條從起點到終點的線段
@@ -957,8 +989,85 @@ function draw(lastX, lastY, x, y, color = `hsl(${hue}, 100%, ${lightness})`, lin
     ctx.lineCap = "round"; //設置線段端點的樣式為圓形
     ctx.stroke(); //畫出線段
     // hue = (hue + 1) % 360; // increment hue value for next line
-    socket.emit("draw", { lastX, lastY, x, y, color, lineWidth }); // emit draw event to server
+    const data = { lastX, lastY, x, y, color, lineWidth, canvasId, userId};
+    socket.emit("draw", data); // emit draw event to server
+    console.log("發出draw事件")
 }
+// canvas.width = 1120;
+// canvas.height = 620;
+// ctx.fillStyle = "#FFFFFF";
+// ctx.fillRect(0, 0, canvas.width, canvas.height);
+// // set up mouse event listeners
+// let drawing = false;
+// let lastX = 0;
+// let lastY = 0;
+// let hue = 0; 
+// let lightness = "60%";
+// let lineWidth = 1;
+//  // array to store all drawings for undo/redo
+// let drawings = [];
+// // push the initial state of canvas into the array
+// drawings.push(canvas.toDataURL());
+// let undoArray = [];
+
+/*-----------------------------------------control canvas pages-----------------------------------------------*/
+prevPageBtn.style.opacity = 0.3;
+prevPageBtn.style.cursor = "default"
+prevPageBtn.addEventListener("click", () => {
+    if(currentPage > 1){
+        currentPage--;
+        showCanvas(currentPage);
+    }
+    prevPageBtn.style.opacity = currentPage === 1 ? 0.3 : 1;
+    prevPageBtn.style.cursor = currentPage === 1 ? "default" : "pointer";
+    nextPageBtn.style.opacity = currentPage === 5 ? 0.3 : 1;
+    nextPageBtn.style.cursor = currentPage === 5 ? "default" : "pointer";
+});
+
+// 前往下一頁
+nextPageBtn.addEventListener("click", () => {
+    if(currentPage < maxPages){
+        currentPage++;
+        showCanvas(currentPage);
+    }
+    prevPageBtn.style.opacity = currentPage === 1 ? 0.3 : 1;
+    prevPageBtn.style.cursor = currentPage === 1 ? "default" : "pointer";
+    nextPageBtn.style.opacity = currentPage === 5 ? 0.3 : 1;
+    nextPageBtn.style.cursor = currentPage === 5 ? "default" : "pointer";
+});
+  
+// 切換當前頁面的canvas
+function showCanvas(page) {
+    const activeCanvas = document.querySelector(".canvas.active");
+    activeCanvas.classList.remove("active");
+    const newActiveCanvas = document.querySelector(`#canvas${page}`);
+    newActiveCanvas.classList.add("active");
+    currentPageEl.textContent = `Page ${page}`;
+}
+showCanvas(currentPage);
+// canvas.addEventListener("mousedown", (e) => {
+//     lastX = e.offsetX;
+//     lastY = e.offsetY;
+//     drawing = true;
+// });
+
+// canvas.addEventListener("mousemove", (e) => {
+//     if (drawing) {
+//         draw(lastX, lastY, e.offsetX, e.offsetY, `hsl(${hue}, 100%, ${lightness})`, lineWidth);
+//         lastX = e.offsetX;
+//         lastY = e.offsetY;
+//     }
+// });
+
+// canvas.addEventListener("mouseup", () => {
+//     drawing = false;
+//     drawings.push(canvas.toDataURL());
+//     socket.emit("updateDrawings", drawings)
+// });
+
+// canvas.addEventListener("mouseout", () => {
+//     drawing = false;
+// });
 
 /*-----------------------------------------toolsBar-----------------------------------------------*/
 /*-----------------------------------------palette-----------------------------------------------*/
@@ -991,30 +1100,36 @@ colors.forEach(color => {
         currentCursorColor = e.target.classList[1];
         updateCursor();
         paletteMenu.style.display = "none";
+        canvases.forEach(canvas => {
+            const ctx = canvas.getContext("2d");
+            ctx.strokeStyle = `hsl(${hue}, 100%, ${lightness})`;
+        });
     });
 });
 
 function updateCursor(){
-    canvas.classList.remove("red_cursor", "orange_cursor", "yellow_cursor", "green_cursor", "blue_cursor", "purple_cursor", "black_cursor", "eraser_cursor", "text_cursor");
-    canvas.classList.add(`${currentCursorColor}_cursor`);
+    canvases.forEach(canvas => {
+        canvas.classList.remove("red_cursor", "orange_cursor", "yellow_cursor", "green_cursor", "blue_cursor", "purple_cursor", "black_cursor", "eraser_cursor", "text_cursor");
+        canvas.classList.add(`${currentCursorColor}_cursor`);
+    });
 }
 
 // 點擊canvas時隱藏menu，但保留背景色
-canvas.addEventListener("click", () => {
-    paletteMenu.style.display = "none";
-    penStrokeMenu.style.display = "none";
-    // 重置所有tools的背景色
-    tools.forEach(tool => {
-        tool.style.backgroundColor = "";
+canvases.forEach(canvas => {
+    canvas.addEventListener("click", () => {
+        paletteMenu.style.display = "none";
+        penStrokeMenu.style.display = "none";
+        // 重置所有tools的背景色
+        tools.forEach(tool => {
+            tool.style.backgroundColor = "";
+        });
     });
-    // // 保留palette的背景色
-    // palette.style.backgroundColor = "#dadada";
 });
 
 document.addEventListener("click", (e) => {
-    if (!palette.contains(e.target) && !paletteMenu.contains(e.target)) {
-      palette.style.backgroundColor = "transparent";
-      paletteMenu.style.display = "none";
+    if(!palette.contains(e.target) && !paletteMenu.contains(e.target)){
+        palette.style.backgroundColor = "transparent";
+        paletteMenu.style.display = "none";
     }
 });
 
@@ -1030,6 +1145,7 @@ penStroke.addEventListener("click", () => {
     // 設置p背景色為灰色
     penStroke.style.backgroundColor = "#dadada";
     penStrokeMenu.style.display = "flex";
+    paletteMenu.style.display = "none";
 });
 
 penStrokeSizes.forEach(penStrokeSize => {
@@ -1038,64 +1154,98 @@ penStrokeSizes.forEach(penStrokeSize => {
         paletteMenu.style.display = "none";
     });
 });
+
+document.addEventListener("click", (e) => {
+    if(!penStroke.contains(e.target) && !penStrokeMenu.contains(e.target)){
+        penStroke.style.backgroundColor = "transparent";
+        penStrokeMenu.style.display = "none";
+    }
+});
 /*-----------------------------------------eraser-----------------------------------------------*/
 const eraser = document.querySelector(".eraser");
 eraser.addEventListener("click", () => {
+    tools.forEach(tool => {
+        tool.style.backgroundColor = "";
+    });
+    // 設置eraser的背景色為灰色
+    eraser.style.backgroundColor = "#dadada";
     lightness = "100%"
     lineWidth = 20
     currentCursorColor = "eraser";
     updateCursor();
 });
 
-/*-----------------------------------------undo/redo-----------------------------------------------*/
-const undoBtn = document.querySelector(".undoBtn");
-const redoBtn = document.querySelector(".redoBtn");
+/*-----------------------------------------eraser-----------------------------------------------*/
+const clearBtn = document.querySelector(".clear-btn");
+clearBtn.addEventListener("click", () => {
+    const canvas = document.querySelector(".canvas.active");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // 清除畫布上的內容
+    ctx.beginPath();
+    ctx.fillStyle = "#FFFFFF"; // 設置背景色為白色
+    ctx.fillRect(0, 0, canvas.width, canvas.height); // 填充背景色
+    // drawings = [];
+    socket.emit("clearCanvas", {canvasId: canvas.id});
+});
+
+socket.on("updateCanvas", (data) => {
+    const canvas = document.getElementById(data.canvasId);
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // 清除畫布上的內容
+    ctx.fillStyle = "#FFFFFF"; // 設置背景色為白色
+    ctx.fillRect(0, 0, canvas.width, canvas.height); // 填充背景色
+    // drawings = [];
+});
+
+// /*-----------------------------------------undo/redo-----------------------------------------------*/
+// const undoBtn = document.querySelector(".undoBtn");
+// const redoBtn = document.querySelector(".redoBtn");
 
 
-undoBtn.addEventListener("click", () => {
-    undo()
-})
+// undoBtn.addEventListener("click", () => {
+//     undo()
+// })
 
-redoBtn.addEventListener("click", () => {
-    redo()
-})
+// redoBtn.addEventListener("click", () => {
+//     redo()
+// })
 
-// handle undo/redo click
-function undo(){
-    if(drawings.length > 1){
-      // remove the last state from the drawings array
-    undoArray.push(drawings.pop());
-    console.log("undoArray", undoArray);
-    console.log("drawings", drawings)
-    // load the previous state from the drawings array to the canvas
-    const lastState = new Image();
-    lastState.src = drawings[drawings.length - 1];
-    lastState.onload = function(){
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(lastState, 0, 0);
-    };
-    socket.emit("undo");
-    }
-}
+// // handle undo/redo click
+// function undo(){
+//     if(drawings.length > 1){
+//       // remove the last state from the drawings array
+//     undoArray.push(drawings.pop());
+//     console.log("undoArray", undoArray);
+//     console.log("drawings", drawings)
+//     // load the previous state from the drawings array to the canvas
+//     const lastState = new Image();
+//     lastState.src = drawings[drawings.length - 1];
+//     lastState.onload = function(){
+//         ctx.clearRect(0, 0, canvas.width, canvas.height);
+//         ctx.drawImage(lastState, 0, 0);
+//     };
+//     socket.emit("undo");
+//     }
+// }
 
-function redo(){
-    if(undoArray.length > 0){
-      // remove the last state from the undoArray
-    const redoState = undoArray.pop();
-    console.log("undoArray", undoArray);
-    console.log("drawings", drawings)
-    // load the redo state to the canvas
-    const lastState = new Image();
-    lastState.src = redoState;
-    lastState.onload = function(){
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(lastState, 0, 0);
-        // push the redo state to the drawings array
-        drawings.push(redoState);
-    };
-    socket.emit("redo");    
-    };
-};
+// function redo(){
+//     if(undoArray.length > 0){
+//       // remove the last state from the undoArray
+//     const redoState = undoArray.pop();
+//     console.log("undoArray", undoArray);
+//     console.log("drawings", drawings)
+//     // load the redo state to the canvas
+//     const lastState = new Image();
+//     lastState.src = redoState;
+//     lastState.onload = function(){
+//         ctx.clearRect(0, 0, canvas.width, canvas.height);
+//         ctx.drawImage(lastState, 0, 0);
+//         // push the redo state to the drawings array
+//         drawings.push(redoState);
+//     };
+//     socket.emit("redo");    
+//     };
+// };
 
 // socket.on("undo", function(){
 //     if(drawings.length > 1){

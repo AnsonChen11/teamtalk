@@ -49,50 +49,70 @@
         </div>
         <div class="section__video">
             <div class="whiteboard" id="whiteboard" style="display:none;">
-                <div class="toolsBar">
-                    <div class="tools palette">
-                        <i class="fa-solid fa-palette"></i>
-                        <div class="palette__menu" style="display: none;">
-                            <div class="color red" hue="0"></div>
-                            <div class="color orange" hue="30"></div>
-                            <div class="color yellow" hue="50"></div>
-                            <div class="color green" hue="90"></div>
-                            <div class="color blue" hue="180"></div>
-                            <div class="color purple" hue="260"></div>
-                            <div class="color black" hue="0" lightness="0%"></div>
+                <div id="canvas-container">
+                    <div class="whiteboard__close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                    <div id="page-controls" class="page-controls">
+                        <div id="prev-page-btn">
+                            <i class="fa-solid fa-chevron-left" style="font-size: 14px;"></i>
+                        </div>
+                        <div id="current-page"></div>
+                        <div id="next-page-btn">
+                            <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
                         </div>
                     </div>
-                    <div class="tools penStroke">
-                        <i class="fa-solid fa-pen"></i>
-                        <div class="penStroke__menu" style="display: none;">
-                            <div class="penStrokeSize small" lineWidth="1"></div>
-                            <div class="penStrokeSize medium" lineWidth="4"></div>
-                            <div class="penStrokeSize large" lineWidth="7"></div>
-                            <div class="penStrokeSize extraLarge" lineWidth="10"></div>
+                    <div class="toolsBar">
+                        <div class="tools palette">
+                            <i class="fa-solid fa-palette"></i>
+                            <div class="palette__menu" style="display: none;">
+                                <div class="color red" hue="0"></div>
+                                <div class="color orange" hue="30"></div>
+                                <div class="color yellow" hue="50"></div>
+                                <div class="color green" hue="90"></div>
+                                <div class="color blue" hue="180"></div>
+                                <div class="color purple" hue="260"></div>
+                                <div class="color black" hue="0" lightness="0%"></div>
+                            </div>
                         </div>
+                        <div class="tools penStroke">
+                            <i class="fa-solid fa-pen"></i>
+                            <div class="penStroke__menu" style="display: none;">
+                                <div class="penStrokeSize small" lineWidth="1"></div>
+                                <div class="penStrokeSize medium" lineWidth="4"></div>
+                                <div class="penStrokeSize large" lineWidth="7"></div>
+                                <div class="penStrokeSize extraLarge" lineWidth="10"></div>
+                            </div>
+                        </div>
+
+                        <div class="tools eraser">
+                            <i class=""><img src="/images/toolsBar_eraser.png"></i>
+                        </div>
+                        <div class="tools clear-btn">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </div>
+                        <!-- <div class="tools">
+                            <i class="fa-solid fa-note-sticky"></i>
+                        </div>
+                        <div class="tools textBox">
+                            <i class=""><img src="/images/toolsBar_text.png"></i>
+                        </div>
+                        <div class="tools undoBtn">
+                            <i class="fa-solid fa-arrow-rotate-left"></i>
+                        </div>
+                        <div class="tools redoBtn">
+                            <i class="fa-solid fa-arrow-rotate-right"></i>
+                        </div> -->
                     </div>
-                    <!-- <div class="tools">
-                        <i class="fa-solid fa-note-sticky"></i>
-                    </div>
-                    <div class="tools textBox">
-                        <i class=""><img src="/images/toolsBar_text.png"></i>
-                    </div> -->
-                    <div class="tools eraser">
-                        <i class=""><img src="/images/toolsBar_eraser.png"></i>
-                    </div>
-                    <div class="tools undoBtn">
-                        <i class="fa-solid fa-arrow-rotate-left"></i>
-                    </div>
-                    <div class="tools redoBtn">
-                        <i class="fa-solid fa-arrow-rotate-right"></i>
-                    </div>
+                    <canvas id="canvas1" class="canvas active"></canvas>
+                    <canvas id="canvas2" class="canvas"></canvas>
+                    <canvas id="canvas3" class="canvas"></canvas>
+                    <canvas id="canvas4" class="canvas"></canvas>
+                    <canvas id="canvas5" class="canvas"></canvas>
                 </div>
-                <canvas id="canvas"></canvas>
             </div>
             <div class="pictures__video">
-                <div class="video__container">
-                    
-                </div>
+                <div class="video__container"></div>
             </div>
             <div class="controls__video">
                 <button id="video__mute" class="controlsBtn"><i class="fa-solid fa-microphone"></i><i class="fa-solid fa-microphone-slash" style="display:none;"></i><div>Audio</div></button>
@@ -109,16 +129,29 @@
             </div>
         </div>
         <div class="section__chat" id="section__chat" style="display:none;">
-            <div class="chat__header">ChatRoom</div>
+            <div class="chat__nav">
+                <div class="chat__header">ChatRoom</div>
+                <div class="chat__close">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+            </div>
             <div class="chat__window">
                 <ul class="messagesBorder"></ul>
             </div>
             <div class="chat__input">
                 <input type="text" id="chat__input" placeholder="Send a message to everyone !">
+                <div class="sendMessage">
+                    <i class="fa-sharp fa-solid fa-paper-plane" style="font-size: 18px;"></i>
+                </div>
             </div>
         </div>
         <div class="section__participation" id="section__participation" style="display:none;">
-            <div class="participation__header">Participation</div>
+            <div class="participation__nav">
+                <div class="participation__header">Participation</div>
+                <div class="participation__close">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+            </div>
             <div class="participation__window">
                 <!-- <ul class="participationBorder">
                     <li class="participation">
