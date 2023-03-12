@@ -83,13 +83,13 @@ TeamTalk is a real-time video conferencing website that provides convenient vide
 
 ## Architecture
 
-#### Server Architecture
+### Server Architecture
 ![TeamTalk Architecture](https://user-images.githubusercontent.com/110713031/224553916-1a8bad95-a7e8-4455-a112-f7ee881b62d6.jpeg)
 
-#### WebRTC Architecture
+### WebRTC Architecture
 ![WebRTC Architecture](https://user-images.githubusercontent.com/110713031/224553924-6ff41e2d-fc08-4a94-a494-9a329cf8b99a.jpeg)
 
-#### Socket Architecture
+### Socket Architecture
 ![Socket Architecture](https://user-images.githubusercontent.com/110713031/224546227-d61d91be-a94a-4115-bf50-682534fad6b3.jpeg)
 
 
