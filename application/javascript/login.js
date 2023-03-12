@@ -2,6 +2,8 @@ const loginEmail = document.getElementById("login_email");
 const loginPassword = document.getElementById("login_password");
 const loginBtn = document.querySelector(".loginBtn");
 const linkToSignupPage = document.querySelector(".linkToSignupPage");
+const loginWithGoogleBtn = document.querySelector(".loginWithGoogleBtn")
+const loginWithFacebookBtn = document.querySelector(".loginWithFacebookBtn")
 
 loginEmail.addEventListener("input", toggleLoginBtn);
 loginPassword.addEventListener("input", toggleLoginBtn);
@@ -12,7 +14,6 @@ loginPassword.addEventListener("input", checkPasswordInputIsValid);
 linkToSignupPage.addEventListener("click", () => {
     window.location.href = "/users/signup";
 })
-
 
 /*----------------------------------controlling submit button open or not ----------------------------------*/
 window.onload = function(){
@@ -117,7 +118,6 @@ loginBtn.addEventListener("click", () => {
             alert("Login successfully")
             const token = data.token
             const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString()
-            console.log(token, expires)
             document.cookie = `token = ${token}; expires = ${expires}; path=/`
             window.location.href = "/";
         }
@@ -128,4 +128,13 @@ loginBtn.addEventListener("click", () => {
     .catch(err => {
         console.error(err);
     });
+});
+
+/*----------------------------------login with google----------------------------------*/
+loginWithGoogleBtn.addEventListener("click", () => {
+    window.location.href= "/auth/google"
+});
+/*----------------------------------login with facebook----------------------------------*/
+loginWithFacebookBtn.addEventListener("click", () => {
+    window.location.href= "/auth/facebook"
 });

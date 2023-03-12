@@ -12,7 +12,6 @@ const s3 = new AWS.S3({
 const authenticateUser = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
     if(!token){
-        console.log("驗證失敗")
         return res.status(401).send({ message: "Access denied. No token provided." });
     }
 
@@ -22,14 +21,13 @@ const authenticateUser = (req, res, next) => {
         next();
     }
     catch(err){
-        res.status(400).send({ message: "Invalid token." });
+        res.status(403).send({ message: "Invalid token." });
     }
 };
 
 const getUserInformation = (req, res) => {
     try{
         const user = req.user;
-        //findOne只會回傳遞一個符合條件的物件; find則會回傳所有符合條件的物件用陣列排列
         User.findOne({_id: user.id}, { username: 1, email: 1, pictureFileName: 1 }, { new: true }, (err, userInformation) => {
             if(err){
                 console.log(err)
@@ -60,6 +58,38 @@ const getUserInformation = (req, res) => {
     }
 }
 
+const getUserInformationFromGoogle = (req, res) => {
+    try{
+        const user = req.user;
+        res.send({ 
+            message: "Valid and get account data successfully.",
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            pictureUrl: user.picture,
+        });
+    }
+    catch(err){
+        res.status(500).send({ message: err })
+    }
+}
+
+const getUserInformationFromFacebook = (req, res) => {
+    try{
+        const user = req.user;
+        res.send({ 
+            message: "Valid and get account data successfully.",
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            pictureUrl: user.picture,
+        });
+    }
+    catch(err){
+        res.status(500).send({ message: err })
+    }
+}
+
 const editAccountUsername = async (req, res) => {
     try{
         const user = req.user;
@@ -70,12 +100,11 @@ const editAccountUsername = async (req, res) => {
                 return res.status(500).send(err);
             }
             const updateToken = signToken(updatedUser);
-            console.log("Token updated successfully");
             res.status(200).send({ message: "Updated successfully", updateToken });
         });
     } 
     catch(err){
-        console.log("出事2", err)
+        console.log(err)
         res.status(500).send({ message: err })
     }
 };
@@ -87,19 +116,18 @@ const uploadAccountPicture = async (req, res) => {
         const fileName = Date.now() + '_' + user.id + '_' + file.originalname;
         const fileContent = file.buffer;
         const params = {
-            Bucket: process.env.aws_bucket_name, // 相簿位子
-            Key: fileName, // 儲存在 S3 上的檔案名稱
-            Body: fileContent, // 檔案
-            ContentType: file.mimetype // 副檔名
+            Bucket: process.env.aws_bucket_name,
+            Key: fileName,
+            Body: fileContent,
+            ContentType: file.mimetype
         };
-        //將圖檔上傳至S3
+        
         s3.upload(params, (err, data) => {
             if(err){
                 return res.status(500).send(err);
             }
-            console.log(`File uploaded successfully. ${data}`);
         })
-        //將資料存入資料庫
+
         User.findByIdAndUpdate(user.id, { $set: { pictureFileName: fileName, updatedAt: Date.now() } }, { new: true }, (err, updatedPicture) => {
             if(err){
                 console.log(err)
@@ -110,7 +138,7 @@ const uploadAccountPicture = async (req, res) => {
         
     } 
     catch(err){
-        console.log("上傳圖片失敗", err)
+        console.log(err)
         res.status(500).send({ message: err })
     }
 };
@@ -141,10 +169,55 @@ const signToken = (user) => {
     });
 };
 
+const googleCallback = async (req, res) => {
+    try{
+        req.session.user = req.user;
+        const tokenLoginWithGoogle = jwt.sign({
+            id: req.user.id,
+            username: req.user.displayName,
+            email: req.user.emails[0].value,
+            picture: req.user.photos[0].value,
+        }, process.env.secret_key, { expiresIn: "7d" });
+        res.cookie("tokenLoginWithGoogle", tokenLoginWithGoogle, { maxAge: 604800000 });
+        res.redirect("/");
+    } 
+    catch(err){
+        res.status(500).send({ message: err })
+    }
+};
+
+const facebookCallback = async (req, res) => {
+    try{
+        req.session.user = req.user;
+        let email = req.user.emails
+        if(!email){
+            email = "Email not found"
+        }
+        else{
+            email = req.user.emails[0].value
+        }
+        const tokenLoginWithFacebook = jwt.sign({
+            id: req.user.id,
+            username: req.user.displayName,
+            email: email,
+            picture: req.user.photos[0].value,
+        }, process.env.secret_key, { expiresIn: "7d" });
+        res.cookie("tokenLoginWithFacebook", tokenLoginWithFacebook, { maxAge: 604800000 });
+        res.redirect("/");
+    } 
+    catch(err){
+        res.status(500).send({ message: err })
+    }
+};
+
 module.exports = { 
     authenticateUser,
     getUserInformation,
+    getUserInformationFromGoogle,
+    getUserInformationFromFacebook,
     logoutAccount,
     editAccountUsername,
     uploadAccountPicture,
+    googleCallback,
+    facebookCallback,
 }

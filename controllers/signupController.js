@@ -1,4 +1,3 @@
-const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const User = require("../models/userModel")
@@ -39,7 +38,6 @@ const signupAccount = async (req, res) => {
     });
     try{
         const savedUser = await newUser.save();
-        // res.send(savedUser)
         uploadDefaultPicture(defaultPictureFileName, defaultPictureBuffer);
         res.status(200).send({ message: "Signup successfully" });
     }
@@ -57,17 +55,16 @@ function convertToBuffer(defaultPictureData){
 
 function uploadDefaultPicture(defaultPictureFileName, defaultPictureBuffer){
     const params = {
-        Bucket: process.env.aws_bucket_name, // 相簿位子
-        Key: defaultPictureFileName, // 你希望儲存在 S3 上的檔案名稱
-        Body: defaultPictureBuffer, // 檔案
-        ContentType: "image/jpeg" // 副檔名
+        Bucket: process.env.aws_bucket_name,
+        Key: defaultPictureFileName,
+        Body: defaultPictureBuffer,
+        ContentType: "image/jpeg"
     };
-    //將圖檔上傳至S3
+
     s3.upload(params, (err, data) => {
         if(err){
             return res.status(500).send(err);
         }
-        // console.log(`File uploaded successfully. ${data.Location}`);
     })
 }
 

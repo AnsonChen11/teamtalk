@@ -19,7 +19,6 @@ linkToLoginPage.addEventListener("click", () => {
 
 /*----------------------------------controlling submit button open or not ----------------------------------*/
 window.onload = function(){
-    // console.log(location.search)
     if(signupUsername.value === "" || signupEmail.value === "" || signupPassword.value === ""){
         createAccount.style.opacity = "0.3";
         createAccount.style.cursor = "default";
@@ -133,7 +132,6 @@ createAccount.addEventListener("click", () => {
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data)
         if(data.message === "Email already exists"){
             alert("Email already exists")
             return
@@ -159,7 +157,6 @@ function createDefaultPictureData(username){
     canvas.height = 400;
     const ctx = canvas.getContext("2d");
 
-    // 產生隨機背景顏色
     const setBackgroundColor  = () => {
         let h = Math.floor(Math.random() * 360);
         let s = Math.floor(Math.random() * 50) + 50; // 產生 50% ~ 100% 的飽和度
@@ -170,49 +167,11 @@ function createDefaultPictureData(username){
 
     ctx.fillStyle = setBackgroundColor();
     ctx.fillRect(0, 0, 600, 400);
-
-    // 文字
     ctx.font = "48px sans-serif";
     ctx.textAlign = "center";
     ctx.fillStyle = "white";
     ctx.fillText(username[0].toUpperCase(), 300, 220);
 
     const defaultPictureData  = canvas.toDataURL();
-    console.log(defaultPictureData);
-    // const img = new Image();
-    // img.src = avatarData;
-    // document.body.appendChild(img);
     return defaultPictureData 
 }
-
-
-// else if(!checkUsername(name)){
-//     createErrorMessage("姓名不得輸入特殊符號", "signin")
-//     return
-// }
-// else if(!checkEmail(email)){
-//     createErrorMessage("email格式錯誤", "signin")
-//     return
-// }
-// else if(!checkPassword(password)){
-//     createErrorMessage("密碼格式錯誤", "signin")
-//     return
-// }
-
-// /*--------------------function of create error message--------------------*/
-// function createErrorMessage(errorMessage, condition){
-//     if(condition == "signin"){
-//         const signinCard = document.querySelector(".signinCard");
-//         const signinCardDiv = document.createElement("div");
-//         signinCardDiv.className = "loginErrorMessage";
-//         signinCardDiv.textContent = errorMessage;
-//         signinCard.insertBefore(signinCardDiv, changeToLogin);
-//     }
-//     if(condition == "login"){
-//         const loginCard = document.querySelector(".loginCard");
-//         const loginCardDiv = document.createElement("div");
-//         loginCardDiv.className = "loginErrorMessage";
-//         loginCardDiv.textContent = errorMessage;
-//         loginCard.insertBefore(loginCardDiv, changeToSignin);
-//     }
-// }

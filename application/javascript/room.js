@@ -1,7 +1,7 @@
-import utils from "./utils.js";
+import auth from "./auth.js";
+import whiteboardController from "./whiteboardController.js";
 /*-------------------------------變數及狀態管理----------------------------------------------*/
-prepareMeeting()
-const socket = io.connect("/", {secure: true});
+export const socket = io.connect("/", {secure: true});
 const myPeer = new Peer({ secure: true, }); // debug: 3
 const peers = {}
 /*-------------------------------join before the meet----------------------------------------------*/
@@ -36,12 +36,14 @@ let myPictureUrl;
 let myAudioIsMuted = false;
 let myVideoIsStopped = false;
 
+prepareMeeting()
+
 async function prepareMeeting(){
-    const authData = await utils.authenticateAndGetData();
+    const authData = await auth.authenticateAndGetData();
     const preMeetingVideo = document.getElementById("premeeting__video");
     myUsername = authData.username;
     myPictureUrl = authData.pictureUrl;
-    premeetingProfilePic.src = myPictureUrl
+    premeetingProfilePic.src = myPictureUrl;
     myStream = await getUserMedia(preMeetingVideo)
     preMeetingAudioBtn.disabled = false;
     preMeetingVideoBtn.disabled = false;
@@ -61,7 +63,6 @@ async function joinRoom(){
     const myAudioIcon = myUserSection.querySelector(".fa-microphone");
     const myAudioSlashIcon = myUserSection.querySelector(".fa-microphone-slash");
     const profilePicGrid = myUserSection.querySelector(".profile_pic_grid");
-    // const profileUrl = myUserSection.querySelector(".profile_pic").src
     const videoIcon = document.querySelector(".videoIcon")
     const videoSlashIcon = document.querySelector(".videoSlashIcon")
     const myParticipationBorder = document.getElementById(`${myUserId}-participation`);
@@ -91,6 +92,7 @@ async function joinRoom(){
         myParticipationVideoIcon.style.display = "none";
         myParticipationVideoSlashIcon.style.display = "block";
     }
+    whiteboardController.initWhiteboard(myUserId);
 };
 
 preMeetingAudioBtn.addEventListener("click", () => {
@@ -125,7 +127,6 @@ preMeetingExitBtn.addEventListener("click", () =>{
 function toggleAudio() {
     const audioTracks = myStream.getAudioTracks();
     if (audioTracks.length === 0) {
-        console.log("No audio tracks in the media stream.");
         return;
     }
     const isMuted = !audioTracks[0].enabled;
@@ -138,7 +139,6 @@ function toggleAudio() {
 function toggleVideo() {
     const videoTracks = myStream.getVideoTracks();
     if (videoTracks.length === 0) {
-        console.log("No video tracks in the media stream.");
         return;
     }
     const isStoppedVideo = !videoTracks[0].enabled;
@@ -185,16 +185,9 @@ function addVideoStream(video, stream){
 }
 /*-------------------------------peer打開連線----------------------------------------------*/
 //local端成功連接到peer伺服器時觸發，並會回傳一個唯一的ID
-myPeer.on("open", userId => { 
-    console.log("myUserId", userId)
+myPeer.on("open", userId => {
     myUserId = userId
-    // const video = createUserSections(userId, username)
     roomId = roomIdUrl.match(/([^/]+)$/)[0];
-    // socket.emit("joinRoom", roomId, userId);
-    // console.log("emit joinRoom", roomId, userId)
-    // console.log(username)
-    // console.log(pictureUrl)
-    // addVideoStream(video);
 });
 
 function createUserSections(userId, username, pictureUrl){
@@ -231,21 +224,16 @@ function createUserSections(userId, username, pictureUrl){
 /*--------------------------監聽是否有新成員收到連接請求，若有責會發出"call"事件，並回答通話(call.answer)-----------------------------*/
 //(remote視角)其他 myPeer物件向該myPeer發出呼叫時觸發。呼叫時，其他myPeer物件會建立一個call物件
 myPeer.on("call", call => { 
-    console.log("someone call me", call.peer);
     const { username, pictureUrl } = call.metadata; // Extract userId and username from metadata
-    console.log(username, pictureUrl)
-    console.log(call.metadata)
     const userId = call.peer
     //此為分享畫面的串流，做特殊處理
-    if(call.metadata.type === "screen-sharing"){ 
-        // const { username } = call.metadata;
+    if(call.metadata.type === "screen-sharing"){
         const { screenSharingVideo } = createScreenSharingSection(`${username}'s`)
         call.answer(myStream);
         //註冊stream事件，當對方連接到Peer物件時並回答呼叫，對方會發送自己的媒體流，此時觸發stream事件
         call.on("stream", (shareScreenStream) => { 
             //其他使用者加入分享畫面者的stream
-            addVideoStream(screenSharingVideo, shareScreenStream) 
-            console.log("加入分享螢幕者的分享畫面")
+            addVideoStream(screenSharingVideo, shareScreenStream)
         })
     };
     //此為加入房間的串流，做一般處理
@@ -289,7 +277,6 @@ myPeer.on("call", call => {
 })
 /*-------------------------------(local)監聽使用者連線----------------------------------------------*/
 socket.on("userConnected", (userId, username, isAudioMuted, isVideoStopped, pictureUrl) => {
-    console.log("Local的音視訊狀況", myAudioIsMuted, myVideoIsStopped)
     const call = myPeer.call(
         userId, //remoteId
         myStream, //localStream, sent to remote
@@ -313,7 +300,6 @@ socket.on("userConnected", (userId, username, isAudioMuted, isVideoStopped, pict
         } 
         else {
             //將遠端的資料及視訊加入到本地
-            console.log("收到對方接受回傳stream ", remoteStream)
             const video = createUserSections(userId, username, pictureUrl)
             createParticipationSection(userId, username, pictureUrl)
             const userSection = document.getElementById(`${userId}`);
@@ -344,7 +330,6 @@ socket.on("userConnected", (userId, username, isAudioMuted, isVideoStopped, pict
         console.log("close on stream")
     });
     peers[userId] = call
-    console.log(peers)
 });
 
 /*-------------------------------釘選畫面及圖示----------------------------------------------*/
@@ -387,12 +372,9 @@ function updateGridTemplate(){
             invisibleCount++;
         }
     });
-    console.log(userSections.length, invisibleCount)
     videoCount = userSections.length - invisibleCount
-    console.log(videoCount)
     let columns = Math.ceil(Math.sqrt(videoCount));
     let rows = Math.ceil(videoCount / columns);
-    console.log("columns", columns, "rows", rows)
     let template = "";
     let pinnedVideo = document.querySelector(".pinned");
     if(pinnedVideo){
@@ -430,27 +412,23 @@ function updateGridTemplate(){
 /*-------------------------------監聽使用者離線----------------------------------------------*/
 socket.on("userDisconnected", (userId) => {
     try{
-        console.log(peers[userId])
-        if (peers[userId]) peers[userId].close() //關閉對該使用者的連接
-        console.log("斷開連線")
+        if (peers[userId]) peers[userId].close()
         const userSection = document.getElementById(userId);
         const video = document.getElementById(userId + "-video");
         const participationBorder = document.getElementById(`${userId}-participation`);
         if(userSection) userSection.remove();
         if(video) video.remove();
         if(participationBorder) participationBorder.remove();
-        // videoCount--;
         updateGridTemplate();
     }
     catch(e){
-        console.log('[error]','leave room :', e);
-        socket.emit('error','couldnt perform requested action');
+        socket.emit("error", "couldn't perform requested action");
     }
 })
 
 /*-------------------------------控制按鈕----------------------------------------------*/
 const videoRecord = document.getElementById("video__record");
-const videoRecordResume = document.getElementById("video__record__resume");
+// const videoRecordResume = document.getElementById("video__record__resume");
 const videoRecordPause = document.getElementById("video__record__pause");
 const videoRecordStop = document.getElementById("video__record__stop");
 const audioMute = document.getElementById("video__mute");
@@ -462,15 +440,12 @@ const sectionChat = document.getElementById("section__chat");
 const participationToggle = document.getElementById("participation__btn");
 const sectionParticipation = document.getElementById("section__participation");
 const sectionVideo = document.querySelector(".section__video");
-// const controlsVideo = document.querySelector(".controls__video");
 const whiteboardBtn = document.getElementById("whiteboard__btn");
-const whiteboardCloseBtn = document.querySelector(".whiteboard__close");
 const chatCloseBtn = document.querySelector(".chat__close");
 const participationCloseBtn = document.querySelector(".participation__close");
 /*-------------------------------控制音訊開關----------------------------------------------*/
 audioMute.addEventListener("click", () => {
     const myUserSection = document.getElementById(`${myUserId}`);
-    // const controlsVideo = document.querySelector(".controls__video");
     const audioTrack = myStream.getAudioTracks()[0]; 
     const myAudioIcon = myUserSection.querySelector(".fa-microphone")
     const myAudioSlashIcon = myUserSection.querySelector(".fa-microphone-slash")
@@ -478,8 +453,6 @@ audioMute.addEventListener("click", () => {
     const myParticipationBorder = document.getElementById(`${myUserId}-participation`);
     const myParticipationAudioIcon = myParticipationBorder.querySelector(".fa-microphone");
     const myParticipationAudioSlashIcon = myParticipationBorder.querySelector(".fa-microphone-slash");
-    // const audioIcon = controlsVideo.querySelector(".fa-microphone")
-    // const audioSlashIcon = controlsVideo.querySelector(".fa-microphone-slash")
     if(audioTrack.enabled === true){
         audioTrack.enabled = false;
         myAudioIsMuted = true
@@ -511,7 +484,6 @@ socket.on("audioStatusControl", (id, audioStatus) => {
     const remoteAudioIcon = remoteId.querySelector(".fa-microphone");
     const remoteAudioSlashIcon = remoteId.querySelector(".fa-microphone-slash");
     const remoteParticipationBorder = document.getElementById(`${id}-participation`);
-    console.log(remoteParticipationBorder)
     const remoteParticipationAudioIcon = remoteParticipationBorder.querySelector(".fa-microphone");
     const remoteParticipationAudioSlashIcon = remoteParticipationBorder.querySelector(".fa-microphone-slash");
     if(audioStatus.muted === true){
@@ -539,7 +511,6 @@ videoStop.addEventListener("click", () => {
     const myParticipationBorder = document.getElementById(`${myUserId}-participation`);
     const myParticipationVideoIcon = myParticipationBorder.querySelector(".fa-video")
     const myParticipationVideoSlashIcon = myParticipationBorder.querySelector(".fa-video-slash")
-    console.log(videoTrack.enabled)
     if(videoTrack.enabled === true){
         videoTrack.enabled = false;
         myVideoIsStopped = true
@@ -549,7 +520,6 @@ videoStop.addEventListener("click", () => {
         profilePicGrid.style.display = "flex";
         myParticipationVideoIcon.style.display = "none";
         myParticipationVideoSlashIcon.style.display = "block";
-        // videoTrack.stop();
         socket.emit("videoStop", myUserId, profileUrl)
     }
     else{
@@ -561,7 +531,6 @@ videoStop.addEventListener("click", () => {
         myParticipationVideoIcon.style.display = "block";
         myParticipationVideoSlashIcon.style.display = "none";
         const myVideo = document.getElementById(`${myUserId}-video`);
-        console.log(myVideo);
         getUserMedia(myVideo);
         setTimeout(() =>{
             profilePicGrid.style.display = "none";
@@ -571,7 +540,6 @@ videoStop.addEventListener("click", () => {
 })
 
 socket.on("videoStopControl", (id, profileUrl) => {
-    console.log(id, profileUrl)
     const remoteUserSection = document.getElementById(id);
     const remoteProfilePicGrid = remoteUserSection.querySelector(".profile_pic_grid");
     const remoteProfile_pic = remoteUserSection.querySelector(".profile_pic");
@@ -612,11 +580,10 @@ shareScreen.addEventListener("click", () => {
                     addVideoStream(screenSharingVideo, screenSharingStream);
                     shareScreen.style.backgroundColor = "rgb(58, 173, 102)";
                     const connectedPeers = Object.keys(myPeer.connections);
-                    console.log(connectedPeers);
                     if(connectedPeers.length > 0){
                         shareScreenToPeers(screenSharingStream, connectedPeers);
                     }
-                    //分享者結束分享畫面
+                    
                     screenSharingStream.getVideoTracks()[0].addEventListener("ended", () => {
                         closeScreenStream(screenSharingVideo, screenSharingSection);
                     });
@@ -656,8 +623,7 @@ function createScreenSharingSection(username){
 
 function shareScreenToPeers(screenStream, connectedPeers){
     connectedPeers.forEach(peerId => {
-        myPeer.call(peerId, screenStream, { metadata: { type: "screen-sharing" } }); 
-        console.log("通知所有使用者開始分享畫面")
+        myPeer.call(peerId, screenStream, { metadata: { type: "screen-sharing" } });
     });
 };
 
@@ -667,7 +633,6 @@ function closeScreenStream(screenSharingVideo, screenSharingSection){
     shareScreen.style.backgroundColor = "rgb(82, 83, 83)";
     screenSharingVideo.remove();
     screenSharingSection.remove()
-    // videoCount--;
     isScreenSharing = false;
     const userSections = document.querySelectorAll(".userSection");
     userSections.forEach(userSection => {
@@ -746,7 +711,6 @@ sendMessage.addEventListener("click", () => {
 
 const chatWindow = document.querySelector(".chat__window");
 const messagesBorder = document.querySelector(".messagesBorder");
-// const messageTime = document.querySelectorAll(".messageTime");
 let lastUserId = "";
 let usernameDisplay;
 socket.on("createMessage", (message, userId, username) => {
@@ -836,8 +800,6 @@ videoRecord.addEventListener("click", async() => {
     const options = { mimeType: "video/webm; codecs=vp9",};
 
     const mediaRecorder = new MediaRecorder(screenRecordStream, options);
-    console.log(mediaRecorder)
-    console.log(mediaRecorder.state)
     const chunks = [];
     videoRecord.style.display = "none";
     videoRecordPause.style.display = "block";
@@ -846,7 +808,6 @@ videoRecord.addEventListener("click", async() => {
     mediaRecorder.start(1000);
     mediaRecorder.addEventListener("dataavailable", (event) => {
         chunks.push(event.data);
-        console.log(chunks);
     });
 
     //點擊結束共用螢幕(預設)
@@ -861,7 +822,6 @@ videoRecord.addEventListener("click", async() => {
     //點擊停止錄影
     videoRecordStop.addEventListener("click", () => {
         videoRecordStopAndDownload(chunks, mediaRecorder);
-        console.log(screenRecordStream.getTracks())
         screenRecordStream.getTracks().forEach(function(track) {
             track.stop();
         });
@@ -877,18 +837,15 @@ function videoRecordController(mediaRecorder){
         if(mediaRecorder.state === "recording"){
             mediaRecorder.pause();
             videoRecordPause.innerHTML = '<i class="fa-solid fa-play"></i><div>Resume</div>'
-            console.log("暫停錄製")
         }
         else if(mediaRecorder.state === "paused"){
             mediaRecorder.resume();
             videoRecordPause.innerHTML = '<i class="fa-solid fa-pause"></i><div>Pause</div>'
-            console.log("正在錄製")
         }
     });
 }
 
 function videoRecordStopAndDownload(chunks, mediaRecorder){
-    console.log("停止錄製")
     mediaRecorder.stop();
     const recordedBlob = new Blob(chunks, { type: "video/webm; codecs=vp9" });
     const recordedUrl = URL.createObjectURL(recordedBlob);
@@ -913,436 +870,3 @@ whiteboardBtn.addEventListener("click", () => {
         whiteboard.style.display = "none"
     }
 })
-
-whiteboardCloseBtn.addEventListener("click", () => {
-    whiteboard.style.display = "none"
-})
-/*-----------------------------------------whiteboard-----------------------------------------------*/
-// initialize canvas element
-const canvases = document.querySelectorAll(".canvas");
-const prevPageBtn = document.querySelector("#prev-page-btn");
-const nextPageBtn = document.querySelector("#next-page-btn");
-const currentPageEl = document.querySelector("#current-page");
-let currentPage = 1;
-let currentCanvasId;
-let drawing = false;
-let lastX = 0;
-let lastY = 0;
-let hue = 0; 
-let lightness = "60%";
-let lineWidth = 1;
-// let drawings = [];
-// let undoArray = [];
-const maxPages = 5;
-canvases.forEach(canvas => {
-    canvas.width = 1120;
-    canvas.height = 620;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // drawings.push(canvas.toDataURL());
-    
-
-    canvas.addEventListener("mousedown", (e) => {
-        currentCanvasId = canvas.id;
-        console.log(currentCanvasId)
-        lastX = e.offsetX;
-        lastY = e.offsetY;
-        drawing = true;
-    });
-
-    canvas.addEventListener("mousemove", (e) => {
-        if(drawing){
-            draw(lastX, lastY, e.offsetX, e.offsetY, `hsl(${hue}, 100%, ${lightness})`, lineWidth, ctx, currentCanvasId, myUserId);
-            lastX = e.offsetX;
-            lastY = e.offsetY;
-        }
-    });
-
-    canvas.addEventListener("mouseup", () => {
-        drawing = false;
-        // drawings.push(canvas.toDataURL());
-        // socket.emit("updateDrawings", drawings)
-    });
-
-    canvas.addEventListener("mouseout", () => {
-        drawing = false;
-    });
-});
-
-socket.on("drawToRemote", (data) => {
-    console.log("收到drawToRemote事件")
-    if(data.userId !== myUserId){
-        const canvas = document.getElementById(data.canvasId);
-        const ctx = canvas.getContext("2d");
-        draw(data.lastX, data.lastY, data.x, data.y, data.color, data.lineWidth, ctx, data.canvasId, data.userId);
-    }
-});
-
-// draw function to draw lines on canvas
-function draw(lastX, lastY, x, y, color = `hsl(${hue}, 100%, ${lightness})`, lineWidth = 1, ctx, canvasId, userId) {
-    ctx.beginPath(); //開始一條新的路徑
-    ctx.moveTo(lastX, lastY); // 設置起點坐標
-    ctx.lineTo(x, y); //繪製一條從起點到終點的線段
-    ctx.strokeStyle = color; //設置線段的顏色
-    ctx.lineWidth = lineWidth; //設置線段的寬度
-    ctx.lineCap = "round"; //設置線段端點的樣式為圓形
-    ctx.stroke(); //畫出線段
-    // hue = (hue + 1) % 360; // increment hue value for next line
-    const data = { lastX, lastY, x, y, color, lineWidth, canvasId, userId};
-    socket.emit("draw", data); // emit draw event to server
-    console.log("發出draw事件")
-}
-// canvas.width = 1120;
-// canvas.height = 620;
-// ctx.fillStyle = "#FFFFFF";
-// ctx.fillRect(0, 0, canvas.width, canvas.height);
-// // set up mouse event listeners
-// let drawing = false;
-// let lastX = 0;
-// let lastY = 0;
-// let hue = 0; 
-// let lightness = "60%";
-// let lineWidth = 1;
-//  // array to store all drawings for undo/redo
-// let drawings = [];
-// // push the initial state of canvas into the array
-// drawings.push(canvas.toDataURL());
-// let undoArray = [];
-
-/*-----------------------------------------control canvas pages-----------------------------------------------*/
-prevPageBtn.style.opacity = 0.3;
-prevPageBtn.style.cursor = "default"
-prevPageBtn.addEventListener("click", () => {
-    if(currentPage > 1){
-        currentPage--;
-        showCanvas(currentPage);
-    }
-    prevPageBtn.style.opacity = currentPage === 1 ? 0.3 : 1;
-    prevPageBtn.style.cursor = currentPage === 1 ? "default" : "pointer";
-    nextPageBtn.style.opacity = currentPage === 5 ? 0.3 : 1;
-    nextPageBtn.style.cursor = currentPage === 5 ? "default" : "pointer";
-});
-
-// 前往下一頁
-nextPageBtn.addEventListener("click", () => {
-    if(currentPage < maxPages){
-        currentPage++;
-        showCanvas(currentPage);
-    }
-    prevPageBtn.style.opacity = currentPage === 1 ? 0.3 : 1;
-    prevPageBtn.style.cursor = currentPage === 1 ? "default" : "pointer";
-    nextPageBtn.style.opacity = currentPage === 5 ? 0.3 : 1;
-    nextPageBtn.style.cursor = currentPage === 5 ? "default" : "pointer";
-});
-  
-// 切換當前頁面的canvas
-function showCanvas(page) {
-    const activeCanvas = document.querySelector(".canvas.active");
-    activeCanvas.classList.remove("active");
-    const newActiveCanvas = document.querySelector(`#canvas${page}`);
-    newActiveCanvas.classList.add("active");
-    currentPageEl.textContent = `Page ${page}`;
-}
-showCanvas(currentPage);
-// canvas.addEventListener("mousedown", (e) => {
-//     lastX = e.offsetX;
-//     lastY = e.offsetY;
-//     drawing = true;
-// });
-
-// canvas.addEventListener("mousemove", (e) => {
-//     if (drawing) {
-//         draw(lastX, lastY, e.offsetX, e.offsetY, `hsl(${hue}, 100%, ${lightness})`, lineWidth);
-//         lastX = e.offsetX;
-//         lastY = e.offsetY;
-//     }
-// });
-
-// canvas.addEventListener("mouseup", () => {
-//     drawing = false;
-//     drawings.push(canvas.toDataURL());
-//     socket.emit("updateDrawings", drawings)
-// });
-
-// canvas.addEventListener("mouseout", () => {
-//     drawing = false;
-// });
-
-/*-----------------------------------------toolsBar-----------------------------------------------*/
-/*-----------------------------------------palette-----------------------------------------------*/
-const tools = document.querySelectorAll(".tools");
-const palette = document.querySelector(".palette");
-const paletteMenu = document.querySelector(".palette__menu");
-const colors = document.querySelectorAll(".color");
-palette.addEventListener("click", () =>{
-    // 重置所有tools的背景色
-    tools.forEach(tool => {
-        tool.style.backgroundColor = "";
-    });
-    // 設置palette的背景色為灰色
-    palette.style.backgroundColor = "#dadada";
-    paletteMenu.style.display = "flex";
-})
-
-let currentCursorColor = "red";
-let lightnessValue;
-colors.forEach(color => {
-    color.addEventListener("click", (e) => {
-        hue = parseInt(e.target.getAttribute("hue"));
-        lightnessValue = e.target.getAttribute("lightness");
-        if(lightnessValue){
-            lightness = lightnessValue;
-        }
-        else{
-            lightness = "60%"
-        };
-        currentCursorColor = e.target.classList[1];
-        updateCursor();
-        paletteMenu.style.display = "none";
-        canvases.forEach(canvas => {
-            const ctx = canvas.getContext("2d");
-            ctx.strokeStyle = `hsl(${hue}, 100%, ${lightness})`;
-        });
-    });
-});
-
-function updateCursor(){
-    canvases.forEach(canvas => {
-        canvas.classList.remove("red_cursor", "orange_cursor", "yellow_cursor", "green_cursor", "blue_cursor", "purple_cursor", "black_cursor", "eraser_cursor", "text_cursor");
-        canvas.classList.add(`${currentCursorColor}_cursor`);
-    });
-}
-
-// 點擊canvas時隱藏menu，但保留背景色
-canvases.forEach(canvas => {
-    canvas.addEventListener("click", () => {
-        paletteMenu.style.display = "none";
-        penStrokeMenu.style.display = "none";
-        // 重置所有tools的背景色
-        tools.forEach(tool => {
-            tool.style.backgroundColor = "";
-        });
-    });
-});
-
-document.addEventListener("click", (e) => {
-    if(!palette.contains(e.target) && !paletteMenu.contains(e.target)){
-        palette.style.backgroundColor = "transparent";
-        paletteMenu.style.display = "none";
-    }
-});
-
-/*-----------------------------------------stroke-----------------------------------------------*/
-const penStroke = document.querySelector(".penStroke");
-const penStrokeMenu = document.querySelector(".penStroke__menu");
-const penStrokeSizes = document.querySelectorAll(".penStrokeSize")
-
-penStroke.addEventListener("click", () => {
-    tools.forEach(tool => {
-        tool.style.backgroundColor = "";
-    });
-    // 設置p背景色為灰色
-    penStroke.style.backgroundColor = "#dadada";
-    penStrokeMenu.style.display = "flex";
-    paletteMenu.style.display = "none";
-});
-
-penStrokeSizes.forEach(penStrokeSize => {
-    penStrokeSize.addEventListener("click", (e) => {
-        lineWidth = parseInt(e.target.getAttribute("lineWidth"));
-        paletteMenu.style.display = "none";
-    });
-});
-
-document.addEventListener("click", (e) => {
-    if(!penStroke.contains(e.target) && !penStrokeMenu.contains(e.target)){
-        penStroke.style.backgroundColor = "transparent";
-        penStrokeMenu.style.display = "none";
-    }
-});
-/*-----------------------------------------eraser-----------------------------------------------*/
-const eraser = document.querySelector(".eraser");
-eraser.addEventListener("click", () => {
-    tools.forEach(tool => {
-        tool.style.backgroundColor = "";
-    });
-    // 設置eraser的背景色為灰色
-    eraser.style.backgroundColor = "#dadada";
-    lightness = "100%"
-    lineWidth = 20
-    currentCursorColor = "eraser";
-    updateCursor();
-});
-
-/*-----------------------------------------eraser-----------------------------------------------*/
-const clearBtn = document.querySelector(".clear-btn");
-clearBtn.addEventListener("click", () => {
-    const canvas = document.querySelector(".canvas.active");
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // 清除畫布上的內容
-    ctx.beginPath();
-    ctx.fillStyle = "#FFFFFF"; // 設置背景色為白色
-    ctx.fillRect(0, 0, canvas.width, canvas.height); // 填充背景色
-    // drawings = [];
-    socket.emit("clearCanvas", {canvasId: canvas.id});
-});
-
-socket.on("updateCanvas", (data) => {
-    const canvas = document.getElementById(data.canvasId);
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // 清除畫布上的內容
-    ctx.fillStyle = "#FFFFFF"; // 設置背景色為白色
-    ctx.fillRect(0, 0, canvas.width, canvas.height); // 填充背景色
-    // drawings = [];
-});
-
-// /*-----------------------------------------undo/redo-----------------------------------------------*/
-// const undoBtn = document.querySelector(".undoBtn");
-// const redoBtn = document.querySelector(".redoBtn");
-
-
-// undoBtn.addEventListener("click", () => {
-//     undo()
-// })
-
-// redoBtn.addEventListener("click", () => {
-//     redo()
-// })
-
-// // handle undo/redo click
-// function undo(){
-//     if(drawings.length > 1){
-//       // remove the last state from the drawings array
-//     undoArray.push(drawings.pop());
-//     console.log("undoArray", undoArray);
-//     console.log("drawings", drawings)
-//     // load the previous state from the drawings array to the canvas
-//     const lastState = new Image();
-//     lastState.src = drawings[drawings.length - 1];
-//     lastState.onload = function(){
-//         ctx.clearRect(0, 0, canvas.width, canvas.height);
-//         ctx.drawImage(lastState, 0, 0);
-//     };
-//     socket.emit("undo");
-//     }
-// }
-
-// function redo(){
-//     if(undoArray.length > 0){
-//       // remove the last state from the undoArray
-//     const redoState = undoArray.pop();
-//     console.log("undoArray", undoArray);
-//     console.log("drawings", drawings)
-//     // load the redo state to the canvas
-//     const lastState = new Image();
-//     lastState.src = redoState;
-//     lastState.onload = function(){
-//         ctx.clearRect(0, 0, canvas.width, canvas.height);
-//         ctx.drawImage(lastState, 0, 0);
-//         // push the redo state to the drawings array
-//         drawings.push(redoState);
-//     };
-//     socket.emit("redo");    
-//     };
-// };
-
-// socket.on("undo", function(){
-//     if(drawings.length > 1){
-//         // remove the last state from the drawings array
-//         undoArray.push(drawings.pop());
-//         // load the previous state from the drawings array to the canvas
-//         const lastState = new Image();
-//         lastState.src = drawings[drawings.length - 1];
-//         lastState.onload = function(){
-//               ctx.clearRect(0, 0, canvas.width, canvas.height);
-//               ctx.drawImage(lastState, 0, 0);
-//         };
-//     }
-// });
-
-// socket.on("redo", function() {
-//     if(undoArray.length > 0){
-//       // remove the last state from the undoArray
-//         const redoState = undoArray.pop();
-//         // load the redo state to the canvas
-//         const lastState = new Image();
-//         lastState.src = redoState;
-//         lastState.onload = function(){
-//             ctx.clearRect(0, 0, canvas.width, canvas.height);
-//             ctx.drawImage(lastState, 0, 0);
-//             // push the redo state to the drawings array
-//             drawings.push(redoState);
-//         };
-//     };
-// });
-// /*-----------------------------------------input text-----------------------------------------------*/
-
-// let isTextBoxActive = false;
-// let textBoxX, textBoxY;
-// const textBox = document.querySelector(".textBox");
-// textBox.addEventListener("click", () => {
-//     isTextBoxActive = true; // 設置為true，以便在畫布上點擊時啟用此功能
-//     currentCursorColor = "text";
-//         updateCursor()
-// });
-// let currentInput;
-// canvas.addEventListener("click", (e) => {
-//     if(isTextBoxActive){
-//         // currentCursorColor = "text";
-//         // updateCursor()
-//         textBoxX = e.pageX;
-//         textBoxY = e.pageY;
-//         const input = document.createElement("input");
-//         input.type = "text";
-//         input.style.position = "absolute";
-//         input.style.left = textBoxX + "px";
-//         input.style.top = textBoxY + "px";
-//         input.style.width = "100px";
-//         input.style.height = "50px";
-//         input.style.border = "none";
-//         input.style.padding = "5px";
-//         input.style.fontFamily = "Arial";
-//         input.style.fontSize = "16px";
-//         input.style.backgroundColor = "#FFFFFF";
-//         input.style.color = "#000000";
-//         canvas.parentNode.appendChild(input);
-//         input.focus();
-//         isTextBoxActive = false;
-//         // canvas.style.cursor = "default";
-
-//         input.addEventListener("blur", (e) => {
-//             if(e.target.value.trim() === ""){
-//                 input.remove();
-//             }
-//             else{
-//                 socket.emit("input", { 
-//                     text: input.value, 
-//                     x: input.offsetLeft, 
-//                     y: input.offsetTop, 
-//                     width: input.offsetWidth, 
-//                     height: input.offsetHeight 
-//                 }); 
-//             }
-//         }); 
-//     }; 
-// });
-
-// socket.on("input", (data) => {
-//     console.log(data)
-//     const input = document.createElement("input");
-//     input.type = "text";
-//     input.style.position = "absolute";
-//     input.style.left = data.x + "px";
-//     input.style.top = data.y + "px";
-//     input.style.width = data.width + "px";
-//     input.style.height = data.height + "px";
-//     input.style.border = "none";
-//     input.style.padding = "5px";
-//     input.style.fontFamily = "Arial";
-//     input.style.fontSize = "16px";
-//     input.style.color = "#000000";
-//     input.style.backgroundColor = "#FFFFFF";
-//     input.value = data.text;
-//     canvas.parentNode.appendChild(input);
-// });

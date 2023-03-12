@@ -1,11 +1,11 @@
-authenticationForIndex();
+import auth from "./auth.js";
+
 const loginBtn = document.querySelector(".loginBtn");
 const signupBtn = document.querySelector(".signupBtn");
 const launchMeeting = document.getElementById("launchMeeting");
 const inputRoomCode = document.getElementById("inputRoomCode");
 const joinBtn = document.getElementById("joinButton");
 const accountBtn = document.querySelector(".accountBtn");
-const accountBtnImg = document.querySelector(".accountBtnImg");
 const accountDropdown = document.querySelector(".account__dropdown");
 const accountHostMeeting = document.querySelector(".account__hostMeeting");
 const accountLogout = document.querySelector(".account__logout");
@@ -24,45 +24,24 @@ const profilePic = document.querySelector(".profile_pic")
 const profilePictureEditRemove = document.querySelector(".profilePicture__edit__remove")
 const profilePictureEditCancel = document.querySelector(".profilePicture__edit__cancel")
 const overlay = document.querySelector(".overlay");
-
+initIndex()
 let username;
 let email;
-/*----------------------------------check user login or not----------------------------------*/
-async function authenticationForIndex(){
-    let token = getCookie("token"); 
-    if(!token){
-        return
-    }
-    try{
-        await fetch("/users/auth", {
-            method: "GET",
-			headers: {
-				"Authorization": `Bearer ${token}`
-			}
-        })
-        .then(response => {
-            if(!response.ok){
-			    return
-		    }
-            return response.json()
-        })
-        .then(data => {
-            console.log(data)
-            loginBtn.style = "display: none";
-            signupBtn.style = "display: none";
-            accountBtn.style = "display:flex";
-            accountProfileUsername.textContent = data.username;
-            accountProfileEmail.textContent = data.email;
-            accountBtn.textContent = data.username[0].toUpperCase()
-            usernameEditName.textContent = data.username;
-            username = data.username;
-            email = data.email;
-            profilePic.src = data.pictureUrl
-            declineProfilePic(data.pictureUrl)
-        })
-    }
-    catch(error){
-		return
+// /*----------------------------------check user login or not----------------------------------*/
+async function initIndex(){
+    const authData = await auth.authenticationForIndex();
+    if(authData){
+        loginBtn.style = "display: none";
+        signupBtn.style = "display: none";
+        accountBtn.style = "display:flex";
+        accountProfileUsername.textContent = authData.username;
+        accountProfileEmail.textContent = authData.email;
+        accountBtn.textContent = authData.username[0].toUpperCase();
+        usernameEditName.textContent = authData.username;
+        username = authData.username;
+        email = authData.email;
+        profilePic.src = authData.pictureUrl;
+        declineProfilePic(authData.pictureUrl);
     }
 }
 
@@ -95,7 +74,6 @@ accountLogout.addEventListener("click", () => {
 })
 
 /*----------------------------------dropdown addEventListener event----------------------------------*/
-
 accountProfileEdit.addEventListener("click", () => {
     if(accountEditSection.style.display === "none"){
         accountEditSection.style.display = "block";
@@ -167,7 +145,7 @@ usernameEditCheck.addEventListener("click", () => {
 });
 
 async function editUsername(newUsername){
-    let token = getCookie("token"); 
+    let token = auth.getCookie("token"); 
     if(!token){
         return
     }
@@ -229,7 +207,7 @@ function declineProfilePic(data){
 function upload(formData){
     const profilePictureEditChange = document.querySelector(".profilePicture__edit__change");
     profilePictureEditChange.addEventListener("click", (e) => {
-        let token = getCookie("token"); 
+        let token = auth.getCookie("token"); 
         if(!token){
             return
         }
@@ -242,15 +220,13 @@ function upload(formData){
         })
         .then(response => response.json())
         .then(data => {
-                console.log(data)
                 if(data.message === "ok"){
                     alert("Upload successfully")
-                    // profilePic.src = data.updatedPictureUrl
                     location.reload()
                 }
         })
-        .catch(error => {
-                console.log("error", error)
+        .catch(err => {
+                console.log("error", err)
         })
     })
 }
@@ -261,8 +237,6 @@ function createDefaultPictureBlob(username){
     canvas.width = 600;
     canvas.height = 400;
     const ctx = canvas.getContext("2d");
-
-    // 產生隨機背景顏色
     const setBackgroundColor  = () => {
         let h = Math.floor(Math.random() * 360);
         let s = Math.floor(Math.random() * 50) + 50; // 產生 50% ~ 100% 的飽和度
@@ -273,8 +247,6 @@ function createDefaultPictureBlob(username){
 
     ctx.fillStyle = setBackgroundColor();
     ctx.fillRect(0, 0, 600, 400);
-
-    // 文字
     ctx.font = "288px sans-serif";
     ctx.textAlign = "center";
     ctx.fillStyle = "white";
@@ -288,8 +260,6 @@ function createDefaultPictureBlob(username){
     for (let i = 0; i < byteString.length; i++) {
         intArray[i] = byteString.charCodeAt(i);
     }
-    console.log(defaultPictureData);
-    // return (defaultPictureData)
     return new Blob([arrayBuffer], { type: mimeString });
 }
 /*----------------------------------launch and join meeting addEventListener event----------------------------------*/
@@ -311,7 +281,7 @@ async function createRoom(){
             return response.json()
         })
         .then(data => {
-            roomId = data.roomId
+            let roomId = data.roomId
             window.location.href = `/room/${roomId}`;
         })
     }
@@ -342,17 +312,16 @@ async function joinRoomByCode(roomCode){
 };
 
 inputRoomCode.addEventListener("keydown", (e) => {
-    roomCode = inputRoomCode.value
+    let roomCode = inputRoomCode.value
     if(e.key === "Enter" && roomCode !== "" ){
         joinRoomByCode(roomCode)
     }
 });
 
 joinBtn.addEventListener("click", () => {
-    roomCode = inputRoomCode.value
+    let roomCode = inputRoomCode.value
     joinRoomByCode(roomCode)
 });
-        // window.location.href = response.url;
 
 
 inputRoomCode.addEventListener("focus", () => {
@@ -373,7 +342,6 @@ inputRoomCode.addEventListener("keyup", () => {
     }
     else{
         joinBtn.style.display = "none";
-        // joinBtn.style.color = "rgb(34, 34, 115)";
     }
 });
 inputRoomCode.addEventListener("input", (e) => {
@@ -402,15 +370,9 @@ function userLogout(){
     .then(data => {
         if(data){
             document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "tokenLoginWithGoogle=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "tokenLoginWithFacebook=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             location.reload()
         }
     })
-}
-
-function getCookie(key) {
-	let value = "; " + document.cookie;
-	let parts = value.split("; " + key + "=");
-	if(parts.length === 2){
-		return parts.pop().split(";").shift();
-	}
 }

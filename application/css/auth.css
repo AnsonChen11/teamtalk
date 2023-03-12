@@ -97,6 +97,43 @@ main{
     margin-bottom: 20px;
 }
 
+.loginWithGoogleBtn, .loginWithFacebookBtn{
+    width: 300px;
+    height: 50px;
+    border-radius: 10px;
+    color: rgb(0, 0, 0);
+    background-color: rgb(255, 255, 255);;
+    border: none;
+    margin-top: 10px;
+}
+
+.loginWithGoogleBtn:hover, .loginWithFacebookBtn:hover{
+    cursor: pointer;
+    background-color: rgba(241, 241, 241, 0.755);
+}
+
+.google-svg, .facebook-svg{
+    margin-right: 10px;
+}
+
+.authContainer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.authiconContainer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loginDivision{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .tag{
     margin-top: 10px;
 }
