@@ -1,12 +1,9 @@
-const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = process.env.secret_key;
 const bcrypt = require("bcrypt");
 const User = require("../models/userModel")
-const session = require("express-session")
-
 
 const getLoginPage = (req, res) => {
     try{

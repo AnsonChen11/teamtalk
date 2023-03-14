@@ -7,6 +7,8 @@ const peers = {}
 /*-------------------------------join before the meet----------------------------------------------*/
 const videoContainer = document.querySelector(".video__container");
 const constraints = { video: true, audio: true };
+const premeetingLoading = document.querySelector(".premeeting__loading")
+const meetingLoading = document.querySelector(".meeting__loading")
 const preMeetingAudioBtn = document.querySelector(".premeeting__options__audio")
 const preMeetingVideoBtn = document.querySelector(".premeeting__options__video")
 const preMeetingJoinBtn = document.querySelector(".premeeting__options__join")
@@ -26,6 +28,12 @@ const audioSlashIcon = controlsVideo.querySelector(".fa-microphone-slash")
 preMeetingAudioBtn.disabled = true;
 preMeetingVideoBtn.disabled = true;
 preMeetingJoinBtn.disabled = true;
+// preMeetingAudioBtn.style.cursor = "default";
+// preMeetingVideoBtn.style.cursor = "default";
+// preMeetingJoinBtn.style.cursor = "default";
+// preMeetingAudioBtn.style.pointerEvents = "none";
+// preMeetingVideoBtn.style.pointerEvents = "none";
+// preMeetingJoinBtn.style.pointerEvents = "none";
 let roomId;
 let roomIdUrl = window.location.pathname;
 let myStream;
@@ -48,17 +56,20 @@ async function prepareMeeting(){
     preMeetingAudioBtn.disabled = false;
     preMeetingVideoBtn.disabled = false;
     preMeetingJoinBtn.disabled = false;
+    premeetingLoading.style.display = "none";
     return myStream;
 }
 
 async function joinRoom(){
+    // loading.style.display = "block";
     const myStream = await prepareMeeting();
     isInRoom = true;
     const video = await createUserSections(myUserId, "You", myPictureUrl);
+    
     createParticipationSection(myUserId, "You", myPictureUrl)
     await addVideoStream(video, myStream);
+    meetingLoading.style.display = "none";
     socket.emit("joinRoom", roomId, myUserId, myUsername, myAudioIsMuted, myVideoIsStopped, myPictureUrl);
-    
     const myUserSection = document.getElementById(`${myUserId}`);
     const myAudioIcon = myUserSection.querySelector(".fa-microphone");
     const myAudioSlashIcon = myUserSection.querySelector(".fa-microphone-slash");
@@ -106,7 +117,7 @@ preMeetingAudioBtn.addEventListener("click", () => {
 
 preMeetingVideoBtn.addEventListener("click", () => {
     videoCamera.style.display = videoCamera.style.display === "none" ? "" : "none";
-    videoText.textContent = videoCamera.style.display === "none" ? "Stop video" : "Video";
+    videoText.textContent = videoCamera.style.display === "none" ? "Stop Video" : "Video";
     videoCameraSlash.style.display = videoCameraSlash.style.display === "none" ? "" : "none";
     preMeetingVideoBtn.style.backgroundColor = videoCamera.style.display === "none" ? "#db3636" : "#252525";
     preMeetingVideoBtn.style.border = videoCamera.style.display === "none" ? "none" : "";

@@ -6,6 +6,7 @@ const launchMeeting = document.getElementById("launchMeeting");
 const inputRoomCode = document.getElementById("inputRoomCode");
 const joinBtn = document.getElementById("joinButton");
 const accountBtn = document.querySelector(".accountBtn");
+const accountBtnImg = document.querySelector(".accountBtnImg");
 const accountDropdown = document.querySelector(".account__dropdown");
 const accountHostMeeting = document.querySelector(".account__hostMeeting");
 const accountLogout = document.querySelector(".account__logout");
@@ -36,7 +37,8 @@ async function initIndex(){
         accountBtn.style = "display:flex";
         accountProfileUsername.textContent = authData.username;
         accountProfileEmail.textContent = authData.email;
-        accountBtn.textContent = authData.username[0].toUpperCase();
+        // accountBtn.textContent = authData.username[0].toUpperCase();
+        accountBtnImg.src = authData.pictureUrl;
         usernameEditName.textContent = authData.username;
         username = authData.username;
         email = authData.email;
@@ -55,12 +57,12 @@ loginBtn.addEventListener("click", () => {
 })
 
 document.addEventListener("click", function (event) {
-    if(!accountDropdown.contains(event.target) && event.target !== accountBtn){
+    if(!accountDropdown.contains(event.target) && event.target !== accountBtnImg){
         accountDropdown.style.display = "none";
     };
 });
 
-accountBtn.addEventListener("click", () => {
+accountBtnImg.addEventListener("click", () => {
     if(accountDropdown.style.display === "none"){
         accountDropdown.style.display = "block";
     } 

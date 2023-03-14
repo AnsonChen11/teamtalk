@@ -1,14 +1,5 @@
 const Room = require("../models/roomModel")
 const { v4: uuidV4 } = require("uuid");
-// exports.enterRoom = (req, res) => {
-//     try{
-//         res.render("room.html", { roomId: req.params.room });
-//     }
-//     catch(err){
-//         console.error(err);
-//     }
-// };
-
 
 const enterRoom = async (req, res) => {
     const roomId = req.params.room
