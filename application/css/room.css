@@ -419,7 +419,24 @@ video{
     height: 72px;
     background-color: rgb(22, 22, 22);
 }
-
+#participation__btn{
+    position: relative;
+}
+.participationNum{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    bottom: 30px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: white;
+    color: #525353;
+    font-weight: 900;
+    font-size: 14px;
+}
 .controlsBtn{
     height: 45px;
     width: 90px;

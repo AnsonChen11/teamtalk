@@ -1,5 +1,6 @@
 import auth from "./auth.js";
 import whiteboardController from "./whiteboardController.js";
+import participation from "./participation.js"
 /*-------------------------------變數及狀態管理----------------------------------------------*/
 export const socket = io.connect("/", {secure: true});
 const myPeer = new Peer({ secure: true, }); // debug: 3
@@ -60,51 +61,6 @@ async function prepareMeeting(){
     return myStream;
 }
 
-async function joinRoom(){
-    // loading.style.display = "block";
-    const myStream = await prepareMeeting();
-    isInRoom = true;
-    const video = await createUserSections(myUserId, "You", myPictureUrl);
-    
-    createParticipationSection(myUserId, "You", myPictureUrl)
-    await addVideoStream(video, myStream);
-    meetingLoading.style.display = "none";
-    socket.emit("joinRoom", roomId, myUserId, myUsername, myAudioIsMuted, myVideoIsStopped, myPictureUrl);
-    const myUserSection = document.getElementById(`${myUserId}`);
-    const myAudioIcon = myUserSection.querySelector(".fa-microphone");
-    const myAudioSlashIcon = myUserSection.querySelector(".fa-microphone-slash");
-    const profilePicGrid = myUserSection.querySelector(".profile_pic_grid");
-    const videoIcon = document.querySelector(".videoIcon")
-    const videoSlashIcon = document.querySelector(".videoSlashIcon")
-    const myParticipationBorder = document.getElementById(`${myUserId}-participation`);
-    const myParticipationAudioIcon = myParticipationBorder.querySelector(".fa-microphone");
-    const myParticipationAudioSlashIcon = myParticipationBorder.querySelector(".fa-microphone-slash");
-    const myParticipationVideoIcon = myParticipationBorder.querySelector(".fa-video")
-    const myParticipationVideoSlashIcon = myParticipationBorder.querySelector(".fa-video-slash")
-
-    if(myAudioIsMuted){
-        const audioTrack = myStream.getAudioTracks()[0]; 
-        audioTrack.enabled = false;
-        audioMute.style.backgroundColor = "rgb(192, 13, 13)";
-        myAudioIcon.style.display = "none";
-        myAudioSlashIcon.style.display = "block";
-        audioIcon.style.display = "none";
-        audioSlashIcon.style.display = "block";
-        myParticipationAudioIcon.style.display = "none";
-        myParticipationAudioSlashIcon.style.display = "block";
-    }
-    if(myVideoIsStopped){
-        const videoTrack = myStream.getVideoTracks()[0]; 
-        videoTrack.enabled = false;
-        videoStop.style.backgroundColor = "rgb(192, 13, 13)";
-        videoIcon.style.display = "none";
-        videoSlashIcon.style.display = "block";
-        profilePicGrid.style.display = "flex";
-        myParticipationVideoIcon.style.display = "none";
-        myParticipationVideoSlashIcon.style.display = "block";
-    }
-    whiteboardController.initWhiteboard(myUserId);
-};
 
 preMeetingAudioBtn.addEventListener("click", () => {
     microphone.style.display = microphone.style.display === "none" ? "" : "none";
@@ -158,7 +114,7 @@ function toggleVideo() {
     });
     myVideoIsStopped = !isStoppedVideo
 }
-
+/*-------------------------------取得媒體資源----------------------------------------------*/
 async function getUserMedia(video){
     try{
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -172,28 +128,91 @@ async function getUserMedia(video){
 }
 
 /*-------------------------------加入音視訊顯示於畫面上----------------------------------------------*/
-function addVideoStream(video, stream){
-    return new Promise((resolve, reject) => {
-        try {
-            if (stream) {
-                video.srcObject = stream;
-            } else {
-                video.srcObject = myStream;
-            }
-            video.addEventListener("loadedmetadata", () => {
-                video.play()
-                resolve();
-            })
-            // videoCount++;
-            updateGridTemplate();
+async function addVideoStream(video, stream){
+    try{
+        if(stream){
+            video.srcObject = stream;
+        } 
+        else{
+            video.srcObject = myStream;
         }
-        catch(error){
-            console.log("Error adding video.", error)
-            reject(error);
-        }
-    })
-
+        video.play();
+        updateGridTemplate();
+    }
+    catch(error){
+        console.log("Error adding video.", error);
+        throw error;
+    }
 }
+// function addVideoStream(video, stream){
+//     return new Promise((resolve, reject) => {
+//         try{
+//             if(stream){
+//                 video.srcObject = stream;
+//             } 
+//             else{
+//                 video.srcObject = myStream;
+//             }
+//             video.addEventListener("loadedmetadata", () => {
+//                 video.play()
+//                 resolve();
+//             })
+//             updateGridTemplate();
+//         }
+//         catch(error){
+//             console.log("Error adding video.", error)
+//             reject(error);
+//         }
+//     })
+// };
+
+/*-------------------------------加入房間----------------------------------------------*/
+let participationNum = 0;
+async function joinRoom(){
+    const myStream = await prepareMeeting();
+    isInRoom = true;
+    const video = await createUserSections(myUserId, "You", myPictureUrl);
+    createParticipationSection(myUserId, "You", myPictureUrl)
+    await addVideoStream(video, myStream);
+    meetingLoading.style.display = "none";
+    socket.emit("joinRoom", roomId, myUserId, myUsername, myAudioIsMuted, myVideoIsStopped, myPictureUrl);
+    const myUserSection = document.getElementById(`${myUserId}`);
+    const myAudioIcon = myUserSection.querySelector(".fa-microphone");
+    const myAudioSlashIcon = myUserSection.querySelector(".fa-microphone-slash");
+    const profilePicGrid = myUserSection.querySelector(".profile_pic_grid");
+    const videoIcon = document.querySelector(".videoIcon")
+    const videoSlashIcon = document.querySelector(".videoSlashIcon")
+    const myParticipationBorder = document.getElementById(`${myUserId}-participation`);
+    const myParticipationAudioIcon = myParticipationBorder.querySelector(".fa-microphone");
+    const myParticipationAudioSlashIcon = myParticipationBorder.querySelector(".fa-microphone-slash");
+    const myParticipationVideoIcon = myParticipationBorder.querySelector(".fa-video")
+    const myParticipationVideoSlashIcon = myParticipationBorder.querySelector(".fa-video-slash")
+
+    if(myAudioIsMuted){
+        const audioTrack = myStream.getAudioTracks()[0]; 
+        audioTrack.enabled = false;
+        audioMute.style.backgroundColor = "rgb(192, 13, 13)";
+        myAudioIcon.style.display = "none";
+        myAudioSlashIcon.style.display = "block";
+        audioIcon.style.display = "none";
+        audioSlashIcon.style.display = "block";
+        myParticipationAudioIcon.style.display = "none";
+        myParticipationAudioSlashIcon.style.display = "block";
+    }
+    if(myVideoIsStopped){
+        const videoTrack = myStream.getVideoTracks()[0]; 
+        videoTrack.enabled = false;
+        videoStop.style.backgroundColor = "rgb(192, 13, 13)";
+        videoIcon.style.display = "none";
+        videoSlashIcon.style.display = "block";
+        profilePicGrid.style.display = "flex";
+        myParticipationVideoIcon.style.display = "none";
+        myParticipationVideoSlashIcon.style.display = "block";
+    }
+    participationNum++
+    participation.updateParticipationNum(participationNum)
+    whiteboardController.initWhiteboard(myUserId);
+};
 /*-------------------------------peer打開連線----------------------------------------------*/
 //local端成功連接到peer伺服器時觸發，並會回傳一個唯一的ID
 myPeer.on("open", userId => {
@@ -282,6 +301,8 @@ myPeer.on("call", call => {
                     participationVideoSlashIcon.style.display = "block";
                 }
                 addVideoStream(video, remoteStream);
+                participationNum++
+                participation.updateParticipationNum(participationNum)
             }
         })
     }
@@ -334,6 +355,8 @@ socket.on("userConnected", (userId, username, isAudioMuted, isVideoStopped, pict
                 participationVideoSlashIcon.style.display = "block";
             }
             addVideoStream(video, remoteStream)
+            participationNum++
+            participation.updateParticipationNum(participationNum)
         }
     });
 
@@ -431,6 +454,8 @@ socket.on("userDisconnected", (userId) => {
         if(video) video.remove();
         if(participationBorder) participationBorder.remove();
         updateGridTemplate();
+        participationNum--
+        participation.updateParticipationNum(participationNum)
     }
     catch(e){
         socket.emit("error", "couldn't perform requested action");
