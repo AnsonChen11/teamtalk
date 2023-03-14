@@ -411,6 +411,14 @@ video{
     position: fixed;
     bottom: 0;
     width: 100%;
+    position: relative;
+}
+.roomCode{
+    background: fixed;
+    color: white;
+    position: absolute;
+    left: 10px;
+    font-size: 14px;
 }
 .controls__video{
     display: flex;

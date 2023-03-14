@@ -187,7 +187,8 @@ async function joinRoom(){
     const myParticipationAudioSlashIcon = myParticipationBorder.querySelector(".fa-microphone-slash");
     const myParticipationVideoIcon = myParticipationBorder.querySelector(".fa-video")
     const myParticipationVideoSlashIcon = myParticipationBorder.querySelector(".fa-video-slash")
-
+    const roomCode = document.querySelector(".roomCode")
+    roomCode.textContent = `Room Code | ${roomId}`
     if(myAudioIsMuted){
         const audioTrack = myStream.getAudioTracks()[0]; 
         audioTrack.enabled = false;
