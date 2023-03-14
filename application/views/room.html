@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/room.css">
+    <link rel="stylesheet" type="text/css" href="/css/promptMessage.css">
+    <link rel="icon" href="/images/teamtalk.png" type="image/png">
+    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <script src="https://kit.fontawesome.com/0145397512.js" crossorigin="anonymous"></script>
+    <title>TeamTalk</title>
+</head>
+<body>
+    <!-- <nav>
+        <div>TeamTalk</div>
+    </nav> -->
+    <main>
+        <div class="beforeJoinTheMeet">
+            <div class="premeeting__video__section">
+                <div class="loading premeeting__loading">
+                    <div class="la-ball-beat la-2x">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
+                <div class="premeeting__video__preview"><div style="color: white; font-size: 20px; font-weight: 700;">My Preview</div></div>
+                <div class="premeeting__profile__section" style="display: none">
+                    <div class="premeeting__profile">
+                        <img class="premeeting__profile_pic">
+                    </div>
+                </div>
+                <video id="premeeting__video"></video>
+            </div>
+            <div class="premeeting__options">
+                <button class="premeeting__options__audio option">
+                    <div>
+                        <i class="fa-solid fa-microphone-lines"></i>
+                        <i class="fa-solid fa-microphone-lines-slash" style="display:none;"></i>
+                        <span class="audioText">Audio</span>
+                    </div>
+                </button>
+                <button class="premeeting__options__video option">
+                    <div>
+                        <i class="fa-solid fa-video videoCamera"></i>
+                        <i class="fa-solid fa-video-slash videoCameraSlash" style="display:none;"></i>
+                        <span class="videoText">Video</span>
+                    </div>
+                </button>
+                <button class="premeeting__options__join option">
+                    <div>Ready to Join</div>
+                </button>
+                <button class="premeeting__options__exit option">
+                    <div>Exit</div>
+                </button>
+            </div>
+        </div>
+        <div class="section__video">
+            <div class="loading meeting__loading">
+                <div class="la-ball-beat la-2x">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+            <div class="whiteboard" id="whiteboard" style="display:none;">
+                <div id="canvas-container">
+                    <div class="whiteboard__close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                    <div id="page-controls" class="page-controls">
+                        <div id="prev-page-btn">
+                            <i class="fa-solid fa-chevron-left" style="font-size: 14px;"></i>
+                        </div>
+                        <div id="current-page"></div>
+                        <div id="next-page-btn">
+                            <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+                        </div>
+                    </div>
+                    <div class="toolsBar">
+                        <div class="tools palette">
+                            <i class="fa-solid fa-palette"></i>
+                            <div class="palette__menu" style="display: none;">
+                                <div class="color red" hue="0"></div>
+                                <div class="color orange" hue="30"></div>
+                                <div class="color yellow" hue="50"></div>
+                                <div class="color green" hue="90"></div>
+                                <div class="color blue" hue="180"></div>
+                                <div class="color purple" hue="260"></div>
+                                <div class="color black" hue="0" lightness="0%"></div>
+                            </div>
+                        </div>
+                        <div class="tools penStroke">
+                            <i class="fa-solid fa-pen"></i>
+                            <div class="penStroke__menu" style="display: none;">
+                                <div class="penStrokeSize small" lineWidth="1"></div>
+                                <div class="penStrokeSize medium" lineWidth="4"></div>
+                                <div class="penStrokeSize large" lineWidth="7"></div>
+                                <div class="penStrokeSize extraLarge" lineWidth="10"></div>
+                            </div>
+                        </div>
+
+                        <div class="tools eraser">
+                            <i class=""><img src="/images/toolsBar_eraser.png"></i>
+                        </div>
+                        <div class="tools clear-btn">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </div>
+                        <!-- <div class="tools">
+                            <i class="fa-solid fa-note-sticky"></i>
+                        </div>
+                        <div class="tools textBox">
+                            <i class=""><img src="/images/toolsBar_text.png"></i>
+                        </div>
+                        <div class="tools undoBtn">
+                            <i class="fa-solid fa-arrow-rotate-left"></i>
+                        </div>
+                        <div class="tools redoBtn">
+                            <i class="fa-solid fa-arrow-rotate-right"></i>
+                        </div> -->
+                    </div>
+                    <canvas id="canvas1" class="canvas active"></canvas>
+                    <canvas id="canvas2" class="canvas"></canvas>
+                    <canvas id="canvas3" class="canvas"></canvas>
+                    <canvas id="canvas4" class="canvas"></canvas>
+                    <canvas id="canvas5" class="canvas"></canvas>
+                </div>
+            </div>
+            <div class="pictures__video">
+                <div class="video__container"></div>
+            </div>
+            <div class="controls__video">
+                <div class="roomCode"></div>
+                <button id="video__mute" class="controlsBtn"><i class="fa-solid fa-microphone"></i><i class="fa-solid fa-microphone-slash" style="display:none;"></i><div>Audio</div></button>
+                <button id="video__stop" class="controlsBtn"><i class="fa-solid fa-video videoIcon"></i><i class="fa-solid fa-video-slash videoSlashIcon" style="display:none;"></i><div>Video</div></button>
+                <button id="video__record" class="controlsBtn"><i class="fa-solid fa-record-vinyl"></i><div>Record</div></button>
+                <button id="video__record__resume" class="controlsBtn" style="display:none;"><i class="fa-solid fa-play"></i><div>Resume</div></button>
+                <button id="video__record__pause" class="controlsBtn" style="display:none;"><i class="fa-solid fa-pause"></i><div>Pause</div></button>
+                <button id="video__record__stop" class="controlsBtn" style="display:none;"><i class="fa-solid fa-stop"></i><div>Stop</div></button>
+                <button id="video__shareScreen" class="controlsBtn"><i class="fa-solid fa-display"></i><div>ScreenSharing</div></button>
+                <button id="video__chat" class="controlsBtn"><i class="fa-solid fa-comment"></i><div>Chat</div></button>
+                <button id="whiteboard__btn" class="controlsBtn"><i class="fa-solid fa-chalkboard"></i><div>Whiteboard</div></button>
+                <button id="participation__btn" class="controlsBtn"><i class="fa-solid fa-user-group"></i><div>Participation</div><div class="participationNum"></div></button>
+                <button id="video__disconnect" class="controlsBtn"><i class="fa-solid fa-phone-slash"></i><div>Disconnect</div></button>
+            </div>
+        </div>
+        <div class="section__chat" id="section__chat" style="display:none;">
+            <div class="chat__nav">
+                <div class="chat__header">ChatRoom</div>
+                <div class="chat__close">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+            </div>
+            <div class="chat__window">
+                <ul class="messagesBorder"></ul>
+            </div>
+            <div class="chat__input">
+                <input type="text" id="chat__input" placeholder="Send a message to everyone !">
+                <div class="sendMessage">
+                    <i class="fa-sharp fa-solid fa-paper-plane" style="font-size: 18px;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="section__participation" id="section__participation" style="display:none;">
+            <div class="participation__nav">
+                <div class="participation__header">Participation</div>
+                <div class="participation__close">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+            </div>
+            <div class="participation__window">
+                <!-- <ul class="participationBorder">
+                    <li class="participation">
+                        <div class="participation_profile">
+                            <div class="participation__pic__container">
+                                <img src="/images/main__pic.png">
+                            </div>
+                            <div class="participation__username">username</div>
+                        </div>
+                        <div class="participation__media">
+                            <div><i class="fa-solid fa-microphone"></i><i class="fa-solid fa-microphone-slash" style="display:none;"></i></div>
+                            <div><i class="fa-solid fa-video"></i><i class="fa-solid fa-video-slash videoSlashIcon" style="display:none;"></i></div>
+                        </div> 
+                    </li>
+                </ul> -->
+            </div>
+        </div>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="/javascript/room.js"></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+</body>
+</html>

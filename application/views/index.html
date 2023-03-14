@@ -4,11 +4,97 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/images/teamtalk.png" type="image/png">
     <link rel="stylesheet" type="text/css" href="/css/index.css">
-    <script src="/javascript/index.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/promptMessage.css">
+    <script src="https://kit.fontawesome.com/0145397512.js" crossorigin="anonymous"></script>
     <title>TeamTalk</title>
 </head>
 <body>
-
+    <nav>
+        <div class="siteTitle">TeamTalk</div>
+        <div class="auth">
+            <div class="loginBtn"><i class="fa-solid fa-user"><span></i>Log in</div>
+            <div class="signupBtn">Sign up</div>
+            <div class="accountBtn" style="display:none;"><img class="accountBtnImg"></div>
+            <div class="account__dropdown" style="display:none;">
+                <ul>
+                    <li class="account__profile">
+                        <div class="iconContainer"><i class="fa-regular fa-address-card dropdownIcon"></i></div>
+                        <div class="account__profile__info">
+                            <div class="account__profile__username"></div>
+                            <div class="account__profile__email"></div>
+                        </div>
+                        <div class="account__profile__edit">
+                            <span>EDIT</span>
+                        </div>
+                    </li>
+                    <li class="account__hostMeeting">
+                        <div class="iconContainer"><i class="fa-solid fa-plus dropdownIcon"></i></div>
+                        <div class="textItem">Host Meeting</div>
+                    </li>
+                    <li class="account__logout">
+                        <div class="iconContainer"><i class="fa-solid fa-arrow-right-from-bracket dropdownIcon"></i></div>
+                        <div class="textItem">Logout</div>
+                    </li>
+                </ul>
+            </div>
+            <div class="account__edit" style="display: none;">
+                <div class="account__edit__nav">
+                    <div class="account__edit__nav">TeamTalk Account</div>
+                    <div class="account__edit__close"><i class="fa-solid fa-xmark"></i></div>
+                </div>
+                <div class="account__edit__title">Username</div>
+                <div class="username__edit__section">
+                    <div id="username" class="username__edit__name"></div>
+                    <input class="username__edit__input" type="text" style="display: none;">
+                    <div class="username__edit__icon"><i class="fa-regular fa-pen-to-square"></i></div>
+                    <div class="username__edit__options" style="display: none;">
+                        <div class="username__edit__check"><i class="fa-solid fa-check"></i></div>
+                        <div class="username__edit__cancel"><i class="fa-solid fa-xmark"></i></div>
+                    </div>
+                </div>
+                <div class="account__edit__title">Profile Picture</div>
+                <div class="profilePicture__section">
+                    <div class="profilePicture__edit">
+                        <input type="file" id="file-uploader" accept="image/gif, image/jpeg, image/png" style="display: none;">
+                        <label for="file-uploader" class="file-uploader">
+                            <img id="profile_pic" class="profile_pic" src="/images/main__pic.png">
+                        </label>
+                    </div>
+                </div>
+                <div class="profilePicture__edit__options">
+                    <div class="profilePicture__edit__change">
+                        <div class="profilePicture__edit__icon"><i class="fa-solid fa-user-pen"></i></div>
+                        <div>Confirm</div>
+                    </div>
+                    <div class="profilePicture__edit__remove">
+                        <div class="profilePicture__edit__icon"><i class="fa-solid fa-trash"></i></div>
+                        <div>Remove</div>
+                    </div>
+                    <div class="profilePicture__edit__cancel" style="display: none;">
+                        <div class="profilePicture__edit__icon"><i class="fa-solid fa-ban"></i></div>
+                        <div>Cancel</div>
+                    </div>
+                </div>
+            </div>
+            <div class="overlay" style="display: none;"></div>
+        </div>
+    </nav>
+    <main>
+        <div class="main__top">
+            <div class="main__begin">
+                <div class="main__intro">One app for everything.<br>And everyone.</div>
+                <div class="main__intro__sub">Bring teams together, reimagine workspaces, engage new audiences, and delight your customers — all on the TeamTalk platform you know and love !</div>
+                <div class="main__launch">
+                    <button id="launchMeeting">New meeting</button>
+                    <input id="inputRoomCode" placeholder="Enter a room code">
+                    <div id="joinButton" class="joinButton" style="display: none;"><div>Join</div></div>
+                </div>
+            </div>
+            <div class="main__pic"><img src="/images/main__pic.png"></div>
+        </div>
+    </main>
+    <script type="module" src="/javascript/index.js"></script>
 </body>
 </html>

@@ -1,0 +1,370 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP&family=Noto+Sans+TC:wght@100;300&family=Noto+Sans:wght@500&display=swap');
+*{
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans', sans-serif;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 700;
+}
+body{
+    margin: 20px 80px 0 80px;
+    position: relative;
+}
+nav{
+    font-weight: 700;
+    font-size: 22px;
+    display: flex;
+    height: 50px;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.siteTitle{
+    color: rgb(34, 34, 115);
+    font-size: 28px;
+}
+
+.auth{
+    display: flex;
+    justify-content: flex-end;
+}
+
+.fa-user{
+    margin-right: 10px;
+}
+
+.loginBtn, .signupBtn{
+    padding: 6px 15px 6px 15px;
+    border-radius: 5px;
+    font-size: 18px;
+}
+
+.loginBtn{
+    margin-right: 10px;
+}
+
+.signupBtn{
+    color: rgb(255, 255, 255);
+    background-color: rgb(34, 34, 115);
+    margin-left: 10px;
+}
+
+.loginBtn:hover{
+    color: rgb(40, 40, 196);
+    cursor: pointer;
+}
+
+.signupBtn:hover{
+    background-color: rgb(40, 40, 196);
+    cursor: pointer;
+}
+
+.accountBtn{
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+	height: 40px;
+    border-radius: 50%;
+    color: rgb(255, 255, 255);
+    position: relative;
+    overflow: hidden;
+}
+
+.accountBtn:hover{
+    cursor: pointer;
+    box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+.accountBtnImg{
+    /* width: 100%; */
+    height: 100%;
+}
+
+.account__dropdown{
+    border-radius: 5px;
+    background-color: rgb(255, 255, 255);
+    box-shadow: 1px 1px 1px 2px rgba(0, 0, 0, 0.2);
+    width: 300px;
+    position: absolute;
+    top: 50px;
+    font-size: 16px;
+}
+
+.account__dropdown li{
+    list-style-type: none;
+    padding: 10px 15px 10px 15px;
+}
+
+.account__dropdown li:hover{
+    background-color: rgba(236, 236, 236, 0.5);
+    cursor: pointer;
+}
+
+
+.account__profile{
+    display: flex;
+    align-items: center;
+    border-bottom: solid 2px rgb(233, 233, 233);
+}
+
+.account__profile__email{
+    color: rgb(190, 190, 192);
+}
+
+.account__profile__edit{
+    color: rgb(0, 153, 255);
+    margin-left: auto;
+}
+
+.account__hostMeeting, .account__logout{
+    display: flex;
+    align-items: center;
+}
+
+.iconContainer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+}
+
+.textItem, .account__profile__info{
+    margin-left: 28px;
+}
+
+.account__edit{
+    background-color: rgb(255, 255, 255);
+    width: 400px;
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translate(-50%, 0);
+    border-radius: 10px;
+    z-index: 1;
+    box-sizing: border-box;
+    padding: 20px 30px 30px 30px;
+}
+
+.account__edit__nav{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.account__edit__close{
+    position: absolute;
+    left: 325px;
+}
+
+.account__edit__close:hover{
+    cursor: pointer;
+    color: rgb(148, 148, 148);
+}
+
+.account__edit__title{
+    border-bottom: 2px solid rgb(221, 220, 220);
+    margin-top: 20px;
+    font-size: 16px;
+    color: rgb(116, 117, 117);
+}
+
+.username__edit__section{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 16px;
+    margin-top: 5px;
+}
+
+.username__edit__input{
+    border-radius: 5px;
+    box-sizing: border-box;
+    padding-left: 6px;
+    border: 2px solid rgb(234, 234, 234);
+    width: 280px
+}
+
+.username__edit__input:focus {
+    outline: none;
+    border: 2px solid rgb(147, 182, 247);
+}
+
+.username__edit__icon:hover{
+    cursor: pointer;
+    color: rgb(148, 148, 148);
+}
+
+.username__edit__options{
+    align-items: center;
+    padding-right: 3px;
+}
+
+.username__edit__check{
+    color: rgb(33, 174, 33);
+    margin-right: 15px;
+}
+
+.username__edit__check:hover{
+    cursor: pointer;
+    color: rgb(34, 226, 53);
+}
+
+.username__edit__cancel{
+    color: rgb(174, 33, 33);
+}
+
+.username__edit__cancel:hover{
+    cursor: pointer;
+    color: rgb(226, 34, 34);
+}
+
+.profilePicture__section{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.profilePicture__edit{
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background-color: rgb(238 238 238);
+    overflow: hidden;
+    border-style: none;
+}
+
+.profilePicture__edit img{
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}
+
+.file-uploader:hover{
+    cursor: pointer;
+}
+
+.profilePicture__edit__options{
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin-top: 30px;
+}
+
+.profilePicture__edit__change, .profilePicture__edit__remove, .profilePicture__edit__cancel{
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 150px;
+    height: 40px;
+    border-radius: 5px;
+    border: 1px solid rgb(209, 208, 208);
+}
+
+.profilePicture__edit__change:hover, .profilePicture__edit__remove:hover, .profilePicture__edit__cancel:hover{
+    background-color: rgba(235, 235, 235, 0.488);
+    cursor: pointer;
+}
+
+.profilePicture__edit__icon{
+    margin-right: 10px;
+}
+
+.overlay{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(32,33,36,.6)
+}
+
+.main__top{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15vh;
+}
+
+.main__intro{
+    font-size: 40px;
+    color: rgb(34, 34, 115);
+}
+
+.main__intro__sub{
+    color: rgb(84, 80, 80);
+    line-height: 30px;
+    margin-top: 10px;
+}
+
+.main__pic{
+    display: flex;
+    justify-content: flex-end;
+}
+
+.main__pic img{
+    width: 80%;
+}
+
+.main__launch{
+    margin-top: 30px;
+    display: flex;
+    align-items: center;
+}
+
+.main__launch button{
+    color: rgb(255, 255, 255);
+    background-color: rgb(34, 34, 115);
+    border-radius: 5px;
+    border-style: none;
+    height: 40px;
+    width: 150px;
+    margin-right: 40px;
+}
+
+.main__launch button:hover{
+    cursor: pointer;
+    background-color: rgb(40, 40, 196);
+}
+
+.main__launch input{
+    height:40px;
+    width: 250px;
+    border: 1px solid rgb(84, 80, 80);
+    border-radius: 5px;
+    box-sizing: border-box;
+    padding-left: 10px;
+    font-size: 16px;
+}
+
+.main__launch input:focus{
+    outline: none;
+    border: 2px solid rgb(147, 182, 247);
+}
+
+.main__launch input::placeholder{
+    font-weight: 700;
+}
+
+.joinButton{
+    margin-left: 20px;
+    color: rgb(164, 164, 164);
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.joinButton:hover{
+    color: #1a73e8;
+    cursor: pointer;
+    /* background-color: rgba(212, 234, 254, 0.219); */
+}

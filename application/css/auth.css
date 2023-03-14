@@ -1,0 +1,179 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP&family=Noto+Sans+TC:wght@100;300&family=Noto+Sans:wght@500&display=swap');
+*{
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans', sans-serif;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 700;
+}
+
+main{
+    height: 100vh;
+    display: flex;
+}
+
+.main__left{
+    flex: 35%;
+    background-color: rgb(24, 24, 82);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.slogans{
+    color: rgb(255, 255, 255);
+}
+.slogans > span{
+    font-size: 60px;
+}
+.auth__pic{
+    padding-top: 60px;
+    display: flex;
+    justify-content: center;
+}
+.auth__pic img{
+    width: 80%;
+}
+
+.main__right{
+    flex: 65%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(255, 255, 255);
+}
+
+.siteTitle{
+    color: rgb(34, 34, 115);
+    font-size: 26px;
+}
+
+.substitle{
+    font-size: 35px;
+    padding: 10px 30px 0 30px;
+}
+
+.containerOfHint{
+    display: flex;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.hintToCreateAccount, .hintToLogin{
+    color: rgb(175, 175, 175);
+}
+
+.linkToSignupPage, .linkToLoginPage{
+    padding-left: 5px;
+    color: rgb(37, 118, 232);
+}
+
+.linkToSignupPage:hover, .linkToLoginPage:hover{
+    color: rgb(7, 112, 172);
+    cursor: pointer;
+}
+
+.signUp__container, .login__container{
+    margin-top: 30px;
+    background-color: rgb(247, 247, 247);
+    border-radius: 10px;
+    width: 500px;
+    /* height: 350px; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+.signUp__area, .login__area{
+    padding: 40px;
+}
+
+.user__info{
+    margin-bottom: 20px;
+}
+
+.loginWithGoogleBtn, .loginWithFacebookBtn{
+    width: 300px;
+    height: 50px;
+    border-radius: 10px;
+    color: rgb(0, 0, 0);
+    background-color: rgb(255, 255, 255);;
+    border: none;
+    margin-top: 10px;
+}
+
+.loginWithGoogleBtn:hover, .loginWithFacebookBtn:hover{
+    cursor: pointer;
+    background-color: rgba(241, 241, 241, 0.755);
+}
+
+.google-svg, .facebook-svg{
+    margin-right: 10px;
+}
+
+.authContainer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.authiconContainer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loginDivision{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tag{
+    margin-top: 10px;
+}
+
+.user__info input{
+    width: 300px;
+    height: 40px;
+    border-radius: 10px;
+    outline: none;
+    box-sizing: border-box;
+    padding: 8px;
+    margin-top: 2px;
+    border-style: none;
+}
+
+.user__info input:focus{
+    border: 2px solid rgb(147, 182, 247);
+}
+
+.hint{
+    box-sizing: border-box;
+    padding-left: 8px;
+    font-size: 14px;
+    color: rgb(182, 182, 182);
+    opacity: 0.6;
+    display: none;
+}
+
+.createAccount, .loginBtn{
+    width: 300px;
+    height: 50px;
+    border-radius: 10px;
+    color: white;
+    background-color: rgb(34, 34, 115);;
+    border: none;
+}
+
+.createAccount:hover, .loginBtn:hover{
+    cursor: pointer;
+    box-shadow: 2px 2px 2px 1px rgba(20, 20, 110, 0.3);;
+    background-color: rgb(19, 19, 160);
+    outline: none;
+}
