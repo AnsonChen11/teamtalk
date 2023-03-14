@@ -1,4 +1,5 @@
 import auth from "./auth.js";
+import promptMessage from "./promptMessage.js";
 
 const loginBtn = document.querySelector(".loginBtn");
 const signupBtn = document.querySelector(".signupBtn");
@@ -136,10 +137,10 @@ usernameEditCancel.addEventListener("click", () => {
 usernameEditCheck.addEventListener("click", () => {
     let newUsername = usernameEditInput.value;
     if(newUsername === ""){
-        alert("Edit username can not be blank")
+        promptMessage.warningMessage("Username field cannot be empty.")
     }
     else if(newUsername === username){
-        alert("Edit username is as same as username")
+        promptMessage.warningMessage("The new name is the same as the current name. Please enter a different name.")
     }
     else if(newUsername !== "" || newUsername !== username){
         editUsername(newUsername);
@@ -223,7 +224,7 @@ function upload(formData){
         .then(response => response.json())
         .then(data => {
                 if(data.message === "ok"){
-                    alert("Upload successfully")
+                    promptMessage.successMessage("Upload successfully.")
                     location.reload()
                 }
         })
@@ -266,6 +267,10 @@ function createDefaultPictureBlob(username){
 }
 /*----------------------------------launch and join meeting addEventListener event----------------------------------*/
 launchMeeting.addEventListener("click", () => {
+    if(accountBtn.style != "display:flex"){
+        promptMessage.warningMessage("Please login to continue.")
+        return
+    }
     createRoom()
 });
 
@@ -300,7 +305,7 @@ async function joinRoomByCode(roomCode){
         })
         .then(response => {
             if(!response.ok){
-                alert("Couldn't find the room");
+                promptMessage.errorMessage("Couldn't find the room.")
                 return
 		    }
             else{

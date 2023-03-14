@@ -1,3 +1,5 @@
+import promptMessage from "./promptMessage.js";
+
 const loginEmail = document.getElementById("login_email");
 const loginPassword = document.getElementById("login_password");
 const loginBtn = document.querySelector(".loginBtn");
@@ -106,23 +108,23 @@ loginBtn.addEventListener("click", () => {
     .then(response => response.json())
     .then(data => {
         if(data.message === "Email not found"){
-            alert("Email not found")
+            promptMessage.errorMessage("Email not found.")
             return
         }
 
         else if(data.message === "Password is incorrect"){
-            alert("Password is incorrect")
+            promptMessage.errorMessage("Password is incorrect.")
             return
         }
         else if(data.message === "Login successfully"){
-            alert("Login successfully")
+            promptMessage.successMessage("Login successfully")
             const token = data.token
             const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString()
             document.cookie = `token = ${token}; expires = ${expires}; path=/`
             window.location.href = "/";
         }
         else{
-            alert("Error message:", data)
+            console.log("Error message:", data)
         }
     })
     .catch(err => {

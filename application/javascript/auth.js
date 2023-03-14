@@ -1,3 +1,4 @@
+import promptMessage from "./promptMessage.js";
 /*----------------------------------check user login or not----------------------------------*/
 async function authenticationForIndex(){
     const token = getCookie("token");
@@ -68,7 +69,7 @@ async function authenticateAndGetData(){
     const tokenLoginWithGoogle = getCookie("tokenLoginWithGoogle"); 
     const tokenLoginWithFacebook = getCookie("tokenLoginWithFacebook"); 
     if(!token && !tokenLoginWithGoogle && !tokenLoginWithFacebook){
-		alert("請先登入")
+		promptMessage.warningMessage("Please login to continue.")
         window.location.href = "/";
         return
     }
@@ -82,7 +83,7 @@ async function authenticateAndGetData(){
             });
     
             if(!response.ok){
-                alert("請先登入")
+                promptMessage.warningMessage("Please login to continue.")
                 window.location.href = "/";
                 return;
             }
@@ -93,7 +94,7 @@ async function authenticateAndGetData(){
             
         }
         catch(error){
-            alert("請先登入")
+            promptMessage.warningMessage("Please login to continue.")
             window.location.href = "/";
         }
     }

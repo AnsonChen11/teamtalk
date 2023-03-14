@@ -1,3 +1,5 @@
+import promptMessage from "./promptMessage.js";
+
 const signupUsername = document.getElementById("signup_username");
 const signupEmail = document.getElementById("signup_email");
 const signupPassword = document.getElementById("signup_password");
@@ -133,16 +135,16 @@ createAccount.addEventListener("click", () => {
     .then(response => response.json())
     .then(data => {
         if(data.message === "Email already exists"){
-            alert("Email already exists")
+            promptMessage.warningMessage("Email already exists")
             return
         }
 
         else if(data.message === "Signup successfully"){
-            alert("Signup successfully Please login")
+            promptMessage.successMessage("Signup successfully. Please login to start.")
             window.location.href = "/users/login";
         }
         else{
-            alert("Error message:", data)
+            console.log("Error message:", data)
         }
     })
     .catch(err => {

@@ -9,6 +9,7 @@
 }
 body{
     margin: 20px 80px 0 80px;
+    position: relative;
 }
 nav{
     font-weight: 700;
@@ -19,6 +20,7 @@ nav{
     align-items: center;
     position: relative;
 }
+
 .siteTitle{
     color: rgb(34, 34, 115);
     font-size: 28px;
