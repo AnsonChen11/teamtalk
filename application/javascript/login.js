@@ -92,7 +92,7 @@ function checkPasswordRex(password){
 };
 
 /*----------------------------------submit user's input to server----------------------------------*/
-loginBtn.addEventListener("click", () => {
+loginBtn.addEventListener("click", async() => {
     const headers = {
         "Content-Type": "application/json"
     };
@@ -100,36 +100,31 @@ loginBtn.addEventListener("click", () => {
         "email": loginEmail.value,
         "password": loginPassword.value
     };
-    fetch("/users/login", {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(body)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if(data.message === "Email not found"){
-            promptMessage.errorMessage("Email not found.")
-            return
-        }
-
-        else if(data.message === "Password is incorrect"){
-            promptMessage.errorMessage("Password is incorrect.")
-            return
-        }
-        else if(data.message === "Login successfully"){
-            promptMessage.successMessage("Login successfully")
-            const token = data.token
-            const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString()
-            document.cookie = `token = ${token}; expires = ${expires}; path=/`
-            window.location.href = "/";
-        }
-        else{
-            console.log("Error message:", data)
-        }
-    })
-    .catch(err => {
+    try{
+        const response = await fetch("/users/login", {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(body)
+        })
+        const data = await response.json();
+            if(data.error){
+                promptMessage.errorMessage(data.message)
+                return
+            }
+            else if(data.ok){
+                promptMessage.successMessage("Login successfully")
+                const token = data.token
+                const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString()
+                document.cookie = `token = ${token}; expires = ${expires}; path=/`
+                window.location.href = "/";
+            }
+            else{
+                console.log("Error message:", data)
+            };
+    }
+    catch(err){
         console.error(err);
-    });
+    };
 });
 
 /*----------------------------------login with google----------------------------------*/

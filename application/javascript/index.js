@@ -38,7 +38,6 @@ async function initIndex(){
         accountBtn.style = "display:flex";
         accountProfileUsername.textContent = authData.username;
         accountProfileEmail.textContent = authData.email;
-        // accountBtn.textContent = authData.username[0].toUpperCase();
         accountBtnImg.src = authData.pictureUrl;
         usernameEditName.textContent = authData.username;
         username = authData.username;
@@ -153,25 +152,22 @@ async function editUsername(newUsername){
         return
     }
     try{
-        await fetch("/users/auth", {
+        const response = await fetch("/users/auth", {
             method: "PUT",
-			headers: {
+            headers: {
                 "Content-Type": "application/json",
-				"Authorization": `Bearer ${token}`
-			},
+                "Authorization": `Bearer ${token}`
+            },
             body: JSON.stringify({ newUsername })
-        })
-        .then(response => {
-            if(!response.ok){
-			    return
-		    }
-            return response.json()
-        })
-        .then(data => {
-            const updateToken  = data.updateToken;
-            document.cookie = `token=${updateToken}`;
-            location.reload();
-        })
+        });
+        if(!response.ok){
+            return;
+        }
+        const data = await response.json();
+        promptMessage.successMessage("Upload successfully.")
+        const updateToken = data.updateToken;
+        document.cookie = `token=${updateToken}`;
+        location.reload();
     }
     catch(error){
 		return
@@ -207,30 +203,30 @@ function declineProfilePic(data){
 }
 
 
-function upload(formData){
+async function upload(formData){
     const profilePictureEditChange = document.querySelector(".profilePicture__edit__change");
-    profilePictureEditChange.addEventListener("click", (e) => {
+    profilePictureEditChange.addEventListener("click", async() => {
         let token = auth.getCookie("token"); 
         if(!token){
             return
         }
-        fetch("/users/auth", {
+        try{
+            const response = await fetch("/users/auth", {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`
                 },
                 body: formData,
-        })
-        .then(response => response.json())
-        .then(data => {
-                if(data.message === "ok"){
-                    promptMessage.successMessage("Upload successfully.")
-                    location.reload()
-                }
-        })
-        .catch(err => {
-                console.log("error", err)
-        })
+            });
+            const data = await response.json();
+            if(data.ok){
+                promptMessage.successMessage("Upload successfully.");
+                location.reload();
+            }
+        }
+        catch(err){
+            console.log("error", err);
+        }
     })
 }
 
@@ -266,8 +262,9 @@ function createDefaultPictureBlob(username){
     return new Blob([arrayBuffer], { type: mimeString });
 }
 /*----------------------------------launch and join meeting addEventListener event----------------------------------*/
-launchMeeting.addEventListener("click", () => {
-    if(accountBtn.style != "display:flex"){
+launchMeeting.addEventListener("click", async() => {
+    const authData = await auth.authenticationForIndex();
+    if(!authData){
         promptMessage.warningMessage("Please login to continue.")
         return
     }
@@ -276,21 +273,17 @@ launchMeeting.addEventListener("click", () => {
 
 async function createRoom(){
     try{
-        await fetch("/room", {
+        const response = await fetch("/room", {
             method: "POST",
             body: JSON.stringify({ username: username, email: email }),
 			headers: { "Content-Type": "application/json" }
         })
-        .then(response => {
-            if(!response.ok){
-			    return
-		    }
-            return response.json()
-        })
-        .then(data => {
-            let roomId = data.roomId
-            window.location.href = `/room/${roomId}`;
-        })
+        if(!response.ok){
+            return;
+        }
+        const data = await response.json();
+        const roomId = data.roomId
+        window.location.href = `/room/${roomId}`;
     }
     catch(err){
         console.log(err);
@@ -299,19 +292,17 @@ async function createRoom(){
 
 async function joinRoomByCode(roomCode){
     try{
-        fetch(`/room/${roomCode}`,{ 
+        const response = await fetch(`/room/${roomCode}`,{ 
             method: "GET",
             headers: { "Accept": "application/json" } 
         })
-        .then(response => {
-            if(!response.ok){
-                promptMessage.errorMessage("Couldn't find the room.")
-                return
-		    }
-            else{
-                window.location.href = `/room/${roomCode}`
-            }
-        })
+        if(!response.ok){
+            promptMessage.errorMessage("Couldn't find the room.")
+            return;
+        }
+        else{
+            window.location.href = `/room/${roomCode}`
+        }
     }
     catch(err){
         console.log(err);
@@ -365,21 +356,25 @@ inputRoomCode.addEventListener("input", (e) => {
     }
 });
 /*----------------------------------user logout----------------------------------*/
-function userLogout(){
-    const headers = {
-        "Content-Type": "application/json"
-    }
-    fetch("/users/logout", {
-        method: "DELETE",
-        headers: headers,
-    })
-    .then(response => response.json())
-    .then(data => {
-        if(data){
+async function userLogout(){
+    try{
+        const response = await fetch("/users/logout", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+        })
+        if(!response.ok){
+            promptMessage.warningMessage("Please try again later.");
+            return;
+        }
+        const data = await response.json();
+        if(data.ok){
             document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "tokenLoginWithGoogle=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "tokenLoginWithFacebook=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            location.reload()
-        }
-    })
-}
+            location.reload();
+        };
+    }
+    catch(err){
+        console.log(err);
+    };
+};

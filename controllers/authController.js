@@ -12,7 +12,10 @@ const s3 = new AWS.S3({
 const authenticateUser = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
     if(!token){
-        return res.status(401).send({ message: "Access denied. No token provided." });
+        return res.status(401).send({ 
+            error: true, 
+            message: "Access denied. No token provided."
+        });
     }
 
     try{
@@ -21,7 +24,10 @@ const authenticateUser = (req, res, next) => {
         next();
     }
     catch(err){
-        res.status(403).send({ message: "Invalid token." });
+        res.status(403).send({ 
+            error: true, 
+            message: "Invalid token." 
+        });
     }
 };
 
@@ -31,7 +37,10 @@ const getUserInformation = (req, res) => {
         User.findOne({_id: user.id}, { username: 1, email: 1, pictureFileName: 1 }, { new: true }, (err, userInformation) => {
             if(err){
                 console.log(err)
-                return res.status(500).send(err);
+                return res.status(500).send({ 
+                    error: true, 
+                    message: "Internal Server Error. " + err
+                });
             }
             const params = {
                 Bucket: process.env.aws_bucket_name,
@@ -40,11 +49,13 @@ const getUserInformation = (req, res) => {
             s3.getObject(params, (err, data) => {
                 if(err){
                     console.log(err);
-                    return res.status(500).send({ message: err });
+                    return res.status(500).send({ 
+                        error: true, 
+                        message: "Internal Server Error." + err
+                    });
                 }
                 let url = `https://d32zqk6sk572zp.cloudfront.net/${userInformation.pictureFileName}`
-                res.send({ 
-                    message: "Valid and get account data successfully.",
+                res.send({
                     id: user.id,
                     username: user.username,
                     email: user.email,
@@ -54,15 +65,17 @@ const getUserInformation = (req, res) => {
         })
     }
     catch(err){
-        res.status(500).send({ message: err })
+        res.status(500).send({ 
+            error: true, 
+            message: "Internal Server Error." + err
+        });
     }
 }
 
 const getUserInformationFromGoogle = (req, res) => {
     try{
         const user = req.user;
-        res.send({ 
-            message: "Valid and get account data successfully.",
+        res.send({
             id: user.id,
             username: user.username,
             email: user.email,
@@ -70,15 +83,17 @@ const getUserInformationFromGoogle = (req, res) => {
         });
     }
     catch(err){
-        res.status(500).send({ message: err })
+        res.status(500).send({ 
+            error: true, 
+            message: "Internal Server Error." + err
+        });
     }
 }
 
 const getUserInformationFromFacebook = (req, res) => {
     try{
         const user = req.user;
-        res.send({ 
-            message: "Valid and get account data successfully.",
+        res.send({
             id: user.id,
             username: user.username,
             email: user.email,
@@ -86,7 +101,10 @@ const getUserInformationFromFacebook = (req, res) => {
         });
     }
     catch(err){
-        res.status(500).send({ message: err })
+        res.status(500).send({ 
+            error: true, 
+            message: "Internal Server Error." + err
+        });
     }
 }
 
@@ -97,15 +115,24 @@ const editAccountUsername = async (req, res) => {
         User.findByIdAndUpdate(user.id, { $set: { username: newUsername, updatedAt: Date.now() } }, { new: true }, (err, updatedUser) => {
             if(err){
                 console.log(err)
-                return res.status(500).send(err);
+                return res.status(500).send({ 
+                    error: true, 
+                    message: "Internal Server Error." + err
+                });
             }
             const updateToken = signToken(updatedUser);
-            res.status(200).send({ message: "Updated successfully", updateToken });
+            res.status(200).send({ 
+                username: updatedUser, 
+                updateToken: updateToken 
+            });
         });
     } 
     catch(err){
         console.log(err)
-        res.status(500).send({ message: err })
+        res.status(500).send({ 
+            error: true, 
+            message: "Internal Server Error." + err
+        });
     }
 };
 
@@ -124,22 +151,33 @@ const uploadAccountPicture = async (req, res) => {
         
         s3.upload(params, (err, data) => {
             if(err){
-                return res.status(500).send(err);
+                return res.status(500).send({ 
+                    error: true, 
+                    message: "Internal Server Error." + err
+                });
             }
         })
 
         User.findByIdAndUpdate(user.id, { $set: { pictureFileName: fileName, updatedAt: Date.now() } }, { new: true }, (err, updatedPicture) => {
             if(err){
                 console.log(err)
-                return res.status(500).send(err);
+                return res.status(500).send({ 
+                    error: true, 
+                    message: "Internal Server Error." + err
+                });
             }
-            res.json({ message: "ok", updatedPicture });
+            res.json({ 
+                ok: true,
+            });
         });
         
     } 
     catch(err){
         console.log(err)
-        res.status(500).send({ message: err })
+        res.status(500).send({ 
+            error: true, 
+            message: "Internal Server Error." + err
+        });
     }
 };
 
@@ -147,15 +185,21 @@ const logoutAccount = async (req, res) => {
     try{
         req.session.destroy(err => {
             if(err){
-                res.status(500).send({ message: err });
+                res.status(500).send({ 
+                    error: true, 
+                    message: "Internal Server Error." + err
+                });
             } 
             else{
-                res.status(200).send({ message: "Logout successfully." });
+                res.status(200).send({ ok: true });
             }
         });
     } 
     catch(err){
-        res.status(500).send({ message: err })
+        res.status(500).send({ 
+            error: true, 
+            message: "Internal Server Error." + err
+        });
     }
 };
 
@@ -182,7 +226,10 @@ const googleCallback = async (req, res) => {
         res.redirect("/");
     } 
     catch(err){
-        res.status(500).send({ message: err })
+        res.status(500).send({ 
+            error: true, 
+            message: "Internal Server Error." + err
+        });
     }
 };
 
@@ -206,7 +253,10 @@ const facebookCallback = async (req, res) => {
         res.redirect("/");
     } 
     catch(err){
-        res.status(500).send({ message: err })
+        res.status(500).send({ 
+            error: true, 
+            message: "Internal Server Error." + err
+        });
     }
 };
 

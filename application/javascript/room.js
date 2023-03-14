@@ -578,26 +578,24 @@ let isScreenSharing = false;
 let screenSharingStream;
 let screenVideo;
 let screenSection;
-shareScreen.addEventListener("click", () => {
+shareScreen.addEventListener("click", async() => {
         try{
             if(!isScreenSharing){
-                navigator.mediaDevices.getDisplayMedia()
-                .then(stream => {
-                    screenSharingStream = stream;
-                    isScreenSharing  = true;
-                    const { screenSharingVideo, screenSharingSection } = createScreenSharingSection("Your");
-                    screenVideo = screenSharingVideo
-                    screenSection = screenSharingSection
-                    addVideoStream(screenSharingVideo, screenSharingStream);
-                    shareScreen.style.backgroundColor = "rgb(58, 173, 102)";
-                    const connectedPeers = Object.keys(myPeer.connections);
-                    if(connectedPeers.length > 0){
-                        shareScreenToPeers(screenSharingStream, connectedPeers);
-                    }
-                    
-                    screenSharingStream.getVideoTracks()[0].addEventListener("ended", () => {
-                        closeScreenStream(screenSharingVideo, screenSharingSection);
-                    });
+                const stream = await navigator.mediaDevices.getDisplayMedia();
+                screenSharingStream = stream;
+                isScreenSharing  = true;
+                const { screenSharingVideo, screenSharingSection } = createScreenSharingSection("Your");
+                screenVideo = screenSharingVideo
+                screenSection = screenSharingSection
+                addVideoStream(screenSharingVideo, screenSharingStream);
+                shareScreen.style.backgroundColor = "rgb(58, 173, 102)";
+                const connectedPeers = Object.keys(myPeer.connections);
+                if(connectedPeers.length > 0){
+                    shareScreenToPeers(screenSharingStream, connectedPeers);
+                }
+                
+                screenSharingStream.getVideoTracks()[0].addEventListener("ended", () => {
+                    closeScreenStream(screenSharingVideo, screenSharingSection);
                 });
             }
             else{

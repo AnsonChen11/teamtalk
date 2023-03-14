@@ -117,7 +117,7 @@ function checkPasswordRex(password){
     return true;
 };
 /*----------------------------------submit user's input to server----------------------------------*/
-createAccount.addEventListener("click", () => {
+createAccount.addEventListener("click", async() => {
     const headers = {
         "Content-Type": "application/json"
     };
@@ -127,30 +127,31 @@ createAccount.addEventListener("click", () => {
         "password": signupPassword.value,
         "defaultPictureData": createDefaultPictureData(signupUsername.value)
     };
-    fetch("/users/signup", {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(body)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if(data.message === "Email already exists"){
-            promptMessage.warningMessage("Email already exists")
+    try{
+        const response = await fetch("/users/signup", {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(body)
+        });
+        const data = await response.json();
+        
+        if(data.error){
+            promptMessage.warningMessage("Email is already taken.");
             return
         }
-
-        else if(data.message === "Signup successfully"){
-            promptMessage.successMessage("Signup successfully. Please login to start.")
+    
+        else if(data.ok){
+            promptMessage.successMessage("Signup successfully. Please login to start.");
             window.location.href = "/users/login";
         }
         else{
-            console.log("Error message:", data)
+            console.log("Error message:", data);
         }
-    })
-    .catch(err => {
+    }
+    catch(err){
         console.error(err);
-    })
-})
+    };
+});
 
 /*--------------------Canvas API to generate avatar--------------------*/
 function createDefaultPictureData(username){

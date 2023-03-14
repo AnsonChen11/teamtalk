@@ -6,7 +6,9 @@ const enterRoom = async (req, res) => {
     const checkRoomExist = await Room.findOne({ roomId });
     try{
         if(!checkRoomExist){
-            res.status(400).send({ message: "Couldn't find the room" });
+            res.status(400).send({ 
+                error: true,
+                message: "Couldn't find the room" });
             return
         }
         else{
@@ -15,6 +17,10 @@ const enterRoom = async (req, res) => {
     }
     catch(err){
         console.error(err);
+        res.status(500).send({ 
+            error: true,
+            message: "Internal Server Error." +err
+        });
     }
 };
 
@@ -29,11 +35,19 @@ const launchRoom = async (req, res) => {
     });
     try{
         const savedRoom = await newRoom.save();
-        res.send({roomId});
+        res.send({
+            ok: true,
+            roomId: roomId,
+            hostName: username,
+            hostEmail: email
+          });
     }
     catch(err){
         console.error(err);
-        res.status(500).send(err);
+        res.status(500).send({ 
+            error: true,
+            message: "Internal Server Error." +err
+        });
     };
 };
 

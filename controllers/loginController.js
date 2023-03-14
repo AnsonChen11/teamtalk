@@ -20,21 +20,33 @@ const loginAccount = async (req, res) => {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
         if(!user){
-            res.status(400).send({ message: "Email not found" });
+            res.status(400).send({ 
+                error: true,
+                message: "Email not found."
+             });
             return;
         }
         const isPasswordMatch = await bcrypt.compare(password, user.password)
         if(!isPasswordMatch){
-            res.status(400).send({ message: "Password is incorrect" });
+            res.status(400).send({ 
+                error: true,
+                message: "Password is incorrect."
+            });
             return;
         }
         const token = jwt.sign({ id: user._id, username: user.username, email: user.email }, SECRET_KEY, { expiresIn: "7d" })
         req.session.user = user;
-        res.status(200).send({ message: "Login successfully", token });
+        res.status(200).send({ 
+            ok: true,
+            token: token 
+        });
     }
     catch(err){
         console.error(err);
-        res.status(400).send(err);
+        res.status(500).send({ 
+            error: true, 
+            message: "Internal Server Error." + err
+        });
     }
 }
 
