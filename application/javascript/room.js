@@ -29,12 +29,6 @@ const audioSlashIcon = controlsVideo.querySelector(".fa-microphone-slash")
 preMeetingAudioBtn.disabled = true;
 preMeetingVideoBtn.disabled = true;
 preMeetingJoinBtn.disabled = true;
-// preMeetingAudioBtn.style.cursor = "default";
-// preMeetingVideoBtn.style.cursor = "default";
-// preMeetingJoinBtn.style.cursor = "default";
-// preMeetingAudioBtn.style.pointerEvents = "none";
-// preMeetingVideoBtn.style.pointerEvents = "none";
-// preMeetingJoinBtn.style.pointerEvents = "none";
 let roomId;
 let roomIdUrl = window.location.pathname;
 let myStream;
@@ -144,30 +138,9 @@ async function addVideoStream(video, stream){
         throw error;
     }
 }
-// function addVideoStream(video, stream){
-//     return new Promise((resolve, reject) => {
-//         try{
-//             if(stream){
-//                 video.srcObject = stream;
-//             } 
-//             else{
-//                 video.srcObject = myStream;
-//             }
-//             video.addEventListener("loadedmetadata", () => {
-//                 video.play()
-//                 resolve();
-//             })
-//             updateGridTemplate();
-//         }
-//         catch(error){
-//             console.log("Error adding video.", error)
-//             reject(error);
-//         }
-//     })
-// };
-
 /*-------------------------------加入房間----------------------------------------------*/
 let participationNum = 0;
+const roomCode = document.querySelector(".roomCode")
 async function joinRoom(){
     const myStream = await prepareMeeting();
     isInRoom = true;
@@ -187,7 +160,7 @@ async function joinRoom(){
     const myParticipationAudioSlashIcon = myParticipationBorder.querySelector(".fa-microphone-slash");
     const myParticipationVideoIcon = myParticipationBorder.querySelector(".fa-video")
     const myParticipationVideoSlashIcon = myParticipationBorder.querySelector(".fa-video-slash")
-    const roomCode = document.querySelector(".roomCode")
+    
     roomCode.textContent = `Room Code | ${roomId}`
     if(myAudioIsMuted){
         const audioTrack = myStream.getAudioTracks()[0]; 
@@ -248,9 +221,6 @@ function createUserSections(userId, username, pictureUrl){
     const video = document.getElementById(`${userId}-video`);
     return video
 }
-
-
-
 
 /*--------------------------監聽是否有新成員收到連接請求，若有責會發出"call"事件，並回答通話(call.answer)-----------------------------*/
 //(remote視角)其他 myPeer物件向該myPeer發出呼叫時觸發。呼叫時，其他myPeer物件會建立一個call物件
@@ -696,30 +666,30 @@ socket.on("removeScreenStream", () => {
 
 /*-------------------------------聊天室----------------------------------------------*/
 chatToggle.addEventListener("click", () => {
-    if(sectionChat.style.display === "none"){
-        sectionChat.style.display = "block";
-        if(sectionParticipation.style.display !== "none"){
-            sectionParticipation.style.display = "none";
-            sectionVideo.style.flex = "77%";
-            controlsVideo.style.width = "77%";
-        }
-        else{
-          sectionVideo.style.flex = "77%";
-          controlsVideo.style.width = "77%";
-        }
-        sectionChat.style.flex = "23%";
-    }
+    if(sectionChat.classList.contains("show")){
+        sectionChat.classList.remove("show");
+        sectionChat.classList.add("hide");
+        sectionVideo.style.width = "100%"
+        roomCode.style.display = "block";
+    } 
     else{
-        sectionChat.style.display = "none";
-        sectionVideo.style.flex = "100%";
-        controlsVideo.style.width = "100%";
+        sectionChat.classList.remove("hide");
+        sectionChat.classList.add("show");
+        sectionChat.style.display = "block";
+        sectionVideo.style.width = "80%"
+        roomCode.style.display = "none";
+        if(sectionParticipation.classList.contains("show")){
+            sectionParticipation.classList.remove("show");
+            sectionParticipation.classList.add("hide");
+            
+        } 
     }
 });
-
 chatCloseBtn.addEventListener("click", () => {
-    sectionChat.style.display = "none";
-    sectionVideo.style.flex = "100%";
-    controlsVideo.style.width = "100%";
+    sectionChat.classList.remove("show");
+    sectionChat.classList.add("hide");
+    sectionVideo.style.width = "100%"
+    roomCode.style.display = "block";
 });
 
 const chatInput = document.getElementById("chat__input");
@@ -780,32 +750,30 @@ socket.on("createMessage", (message, userId, username) => {
 
 /*-------------------------------participation---------------------------------------------*/
 const participationWindow = document.querySelector(".participation__window")
-
 participationToggle.addEventListener("click", () => {
-    if(sectionParticipation.style.display === "none"){
+    if(sectionParticipation.classList.contains("show")) {
+        sectionParticipation.classList.remove("show");
+        sectionParticipation.classList.add("hide");
+        sectionVideo.style.width = "100%"
+        roomCode.style.display = "block";
+    } else {
+        sectionParticipation.classList.remove("hide");
+        sectionParticipation.classList.add("show");
         sectionParticipation.style.display = "block";
-        sectionParticipation.style.width = "20%";
-        if(sectionChat.style.display !== "none"){
-            sectionChat.style.display = "none";
-            sectionVideo.style.flex = "80%";
-            controlsVideo.style.width = "80%";
+        sectionVideo.style.width = "80%"
+        roomCode.style.display = "none";
+        if(sectionChat.classList.contains("show")){
+            sectionChat.classList.remove("show");
+            sectionChat.classList.add("hide");
         } 
-        else{
-            sectionVideo.style.flex = "80%";
-            controlsVideo.style.width = "80%";
-        }
-    } 
-    else{
-        sectionParticipation.style.display = "none";
-        sectionVideo.style.flex = "100%";
-        controlsVideo.style.width = "100%";
     }
 });
 
 participationCloseBtn.addEventListener("click", () => {
-    sectionParticipation.style.display = "none";
-    sectionVideo.style.flex = "100%";
-    controlsVideo.style.width = "100%";
+    sectionParticipation.classList.remove("show");
+    sectionParticipation.classList.add("hide");
+    sectionVideo.style.width = "100%"
+    roomCode.style.display = "block";
 });
 
 function createParticipationSection(userId, username, pictureUrl){
@@ -898,10 +866,12 @@ disconnect.addEventListener("click", () => {
 /*-------------------------------白板開關----------------------------------------------*/
 const whiteboard = document.getElementById("whiteboard");
 whiteboardBtn.addEventListener("click", () => {
-    if(whiteboard.style.display === "none"){
-        whiteboard.style.display = "flex"
+    if(whiteboard.classList.contains("show")){
+        whiteboard.classList.add("hide");
+        whiteboard.classList.remove("show");
     }
     else{
-        whiteboard.style.display = "none"
+        whiteboard.classList.add("show");
+        whiteboard.classList.remove("hide");
     }
 })
