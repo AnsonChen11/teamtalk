@@ -12,9 +12,6 @@
     <title>TeamTalk</title>
 </head>
 <body>
-    <!-- <nav>
-        <div>TeamTalk</div>
-    </nav> -->
     <main>
         <div class="beforeJoinTheMeet">
             <div class="premeeting__video__section">
@@ -64,7 +61,7 @@
                     <div></div>
                 </div>
             </div>
-            <div class="whiteboard" id="whiteboard" style="display:none;">
+            <div class="whiteboard" id="whiteboard">
                 <div id="canvas-container">
                     <div class="whiteboard__close">
                         <i class="fa-solid fa-xmark"></i>
@@ -100,25 +97,12 @@
                                 <div class="penStrokeSize extraLarge" lineWidth="10"></div>
                             </div>
                         </div>
-
                         <div class="tools eraser">
                             <i class=""><img src="/images/toolsBar_eraser.png"></i>
                         </div>
                         <div class="tools clear-btn">
                             <i class="fa-solid fa-trash-can"></i>
                         </div>
-                        <!-- <div class="tools">
-                            <i class="fa-solid fa-note-sticky"></i>
-                        </div>
-                        <div class="tools textBox">
-                            <i class=""><img src="/images/toolsBar_text.png"></i>
-                        </div>
-                        <div class="tools undoBtn">
-                            <i class="fa-solid fa-arrow-rotate-left"></i>
-                        </div>
-                        <div class="tools redoBtn">
-                            <i class="fa-solid fa-arrow-rotate-right"></i>
-                        </div> -->
                     </div>
                     <canvas id="canvas1" class="canvas active"></canvas>
                     <canvas id="canvas2" class="canvas"></canvas>
@@ -141,7 +125,7 @@
                 <button id="video__shareScreen" class="controlsBtn"><i class="fa-solid fa-display"></i><div>ScreenSharing</div></button>
                 <button id="video__chat" class="controlsBtn"><i class="fa-solid fa-comment"></i><div>Chat</div></button>
                 <button id="whiteboard__btn" class="controlsBtn"><i class="fa-solid fa-chalkboard"></i><div>Whiteboard</div></button>
-                <button id="participation__btn" class="controlsBtn"><i class="fa-solid fa-user-group"></i><div>Participation</div><div class="participationNum"></div></button>
+                <button id="participation__btn" class="controlsBtn"><i class="fa-solid fa-user-group"></i><div>Participation</div><div class="participationNum">0</div></button>
                 <button id="video__disconnect" class="controlsBtn"><i class="fa-solid fa-phone-slash"></i><div>Disconnect</div></button>
             </div>
         </div>
@@ -162,7 +146,7 @@
                 </div>
             </div>
         </div>
-        <div class="section__participation" id="section__participation" style="display:none;">
+        <div class="section__participation" id="section__participation">
             <div class="participation__nav">
                 <div class="participation__header">Participation</div>
                 <div class="participation__close">
@@ -170,20 +154,6 @@
                 </div>
             </div>
             <div class="participation__window">
-                <!-- <ul class="participationBorder">
-                    <li class="participation">
-                        <div class="participation_profile">
-                            <div class="participation__pic__container">
-                                <img src="/images/main__pic.png">
-                            </div>
-                            <div class="participation__username">username</div>
-                        </div>
-                        <div class="participation__media">
-                            <div><i class="fa-solid fa-microphone"></i><i class="fa-solid fa-microphone-slash" style="display:none;"></i></div>
-                            <div><i class="fa-solid fa-video"></i><i class="fa-solid fa-video-slash videoSlashIcon" style="display:none;"></i></div>
-                        </div> 
-                    </li>
-                </ul> -->
             </div>
         </div>
     </main>

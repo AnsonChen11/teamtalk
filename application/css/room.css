@@ -7,14 +7,18 @@
     font-family: 'Noto Sans TC', sans-serif;
     font-weight: 500;
 }
+
 body{
     background-color: rgb(37, 37, 37);
     height: 100%;
+    overflow: hidden;
 }
+
 nav{
     background-color: rgb(37, 37, 37);
     color: aliceblue;
 }
+
 main{
     height: 100vh;
     display: flex;
@@ -34,6 +38,7 @@ main{
     border-radius: 10px;
     margin: 15px;
     position: relative;
+    background-color: #363636;
 }
 
 .premeeting__video__preview{
@@ -51,6 +56,7 @@ main{
     position: absolute;
     width: 100%;
     height: 100%;
+    border-radius: 5px;
 }
 
 #premeeting__video{
@@ -107,9 +113,10 @@ main{
 }
 
 .section__video{
-    flex: 77%;
+    width: 100%;
     position: relative;
     display: none;
+    transition: all 0.3s ease-in-out;
 }
 
 .pictures__video{
@@ -135,7 +142,6 @@ main{
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    /* position: relative; */
     border-radius: 5px;
     overflow: hidden;
     width: 100%;
@@ -177,8 +183,6 @@ video{
 
 .userSection:hover .video-grid__thumbtack, .screenSharingSection:hover .video-grid__thumbtack{
     opacity: 1;
-    /* transition: opacity 0.3s;
-    animation: ease-in-out; */
 }
 
 .video-grid__thumbtack{
@@ -200,8 +204,6 @@ video{
 .video-grid__thumbtack:hover{
     background-color: #292929aa;
 }
-
-
 
 .video-grid__microphone{
     position: absolute;
@@ -243,9 +245,22 @@ video{
 }
 
 .section__participation{
-    flex: 20%;
     background-color: rgb(30, 30, 30);
-    /* display: none; */
+    position: fixed;
+    top: 0;
+    right: -20%;
+    width: 20%;
+    height: 100vh;
+    transition: all 0.3s ease-in-out;
+    z-index: 9999;
+}
+
+.section__participation.show {
+    transform: translateX(-100%); 
+}
+
+.section__participation.hide {
+    transform: translateX(0);
 }
 
 .participation__nav, .chat__nav{
@@ -318,15 +333,27 @@ video{
     width: 30px;
     height: 30px;
     display: flex;
-    /* margin: 0 5px 0 5px; */
     align-items: center;
     justify-content: center;
 }
 
 .section__chat{
-    flex: 23%;
     background-color: rgb(30, 30, 30);
-    display: none;
+    position: fixed;
+    top: 0;
+    right: -20%;
+    width: 20%;
+    height: 100vh;
+    transition: all 0.3s ease-in-out;
+    z-index: 9999;
+}
+
+.section__chat.show {
+    transform: translateX(-100%);
+}
+
+.section__chat.hide {
+    transform: translateX(0);
 }
 
 .chat__header, .participation__header{
@@ -335,19 +362,22 @@ video{
     font-weight: 700;
     margin: 10px 0 10px 0;
 }
+
 .chat__window{
     height: calc(100vh - 116px);
     overflow-y: auto;
 }
+
 .chat__input{
     height: 72px;
     display: flex;
     align-items: center;
     border-top: 1px solid #acacac;
 }
+
 .chat__input > input{
     height: 100%;
-    width: 21%;
+    width: 90%;
     word-wrap: break-word;
     box-sizing: border-box;
     padding: 10px;
@@ -356,6 +386,7 @@ video{
     color: #acacac;
     font-weight: 500;
 }
+
 .chat__input > input:focus{
     outline: none;
 }
@@ -381,8 +412,8 @@ video{
     color: rgb(200 200 200);
     list-style-type: none;
     font-size: 10px;
-    /* margin: 0 15px; */
 }
+
 .messageUser{
     margin: 10px 15px;
 }
@@ -399,7 +430,7 @@ video{
     color: #FFFFFF;
     list-style-type: none;
     width: fit-content;
-    max-width: 70%;
+    max-width: 50%;
     background-color: #0372c9;
     border-radius: 10px;
     padding: 5px 10px 5px 10px;
@@ -407,12 +438,14 @@ video{
     margin: 10px;
     position: relative;
 }
+
 .controls__video, .chat__input {
     position: fixed;
     bottom: 0;
     width: 100%;
     position: relative;
 }
+
 .roomCode{
     background: fixed;
     color: white;
@@ -420,6 +453,7 @@ video{
     left: 10px;
     font-size: 14px;
 }
+
 .controls__video{
     display: flex;
     justify-content: center;
@@ -427,9 +461,11 @@ video{
     height: 72px;
     background-color: rgb(22, 22, 22);
 }
+
 #participation__btn{
     position: relative;
 }
+
 .participationNum{
     display: flex;
     justify-content: center;
@@ -445,6 +481,7 @@ video{
     font-weight: 900;
     font-size: 14px;
 }
+
 .controlsBtn{
     height: 45px;
     width: 90px;
@@ -457,31 +494,45 @@ video{
     /* border: 1px solid rgb(209, 209, 209);
     background-color: rgba(82, 83, 83, 0); */
 }
+
 #video__disconnect{
     background-color: rgb(192, 13, 13);
 }
+
 .controlsBtn:hover{
     background-color: rgb(97, 97, 97);   
     cursor: pointer; 
 }
+
 #video__disconnect:hover{
     background-color: rgb(216, 21, 21);
     cursor: pointer; 
 }
+
 .fa-solid{
     font-size: 20px
 }
 
-
 .whiteboard{
     position: absolute;
-    display: flex;
+    display: none;
     justify-content: center;
     align-items: center;
     width: 100%;
     height: calc(100vh - 70px);
     z-index: 10;
-    transition:  0.5s ease-in-out; /* 定義right屬性的過渡效果 */
+    transition: all 0.5s ease-in-out; 
+}
+
+.whiteboard.show {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.whiteboard.hide {
+    opacity: 0;
+    transform: translateY(100%);
 }
 
 #canvas-container{
@@ -568,9 +619,9 @@ video{
     align-items: center;
 }
 
-.tools.disabled {
+.tools.disabled{
     background-color: #dadada;
-  }
+}
 
 .tools:hover{
     background-color: #dadada;
@@ -698,22 +749,24 @@ video{
     height: 10px;
     background-color: #363636;
 }
+
 .medium{
     width: 15px;
     height: 15px;
     background-color: #363636;
 }
+
 .large{
     width: 20px;
     height: 20px;
     background-color: #363636;
 }
+
 .extraLarge{
     width: 25px;
     height: 25px;
     background-color: #363636;
 }
-
 
 .eraser_cursor{
     cursor: url("/images/eraser_cursor.png"), auto;
@@ -723,24 +776,19 @@ video{
     cursor: url("/images/text_cursor.png"), auto;
 }
 
-
-/*Scroll Bar style*/
-/* width */
 ::-webkit-scrollbar{
     width: 10px;
 }
-  /* Track */
+
 ::-webkit-scrollbar-track{
     background: rgb(37, 37, 37);
 }
   
-  /* Handle */
 ::-webkit-scrollbar-thumb{
     background: #4b4b4b;
     border-radius: 10px;
 }
   
-  /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover{
     background: #484848;
 }
@@ -761,31 +809,34 @@ video{
     transform: translate(50%, 0);
 }
 
-.la-ball-beat,
-.la-ball-beat > div {
+.la-ball-beat,.la-ball-beat > div {
     position: relative;
     -webkit-box-sizing: border-box;
-       -moz-box-sizing: border-box;
-            box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
-.la-ball-beat {
+.la-ball-beat{
     display: block;
     font-size: 0;
     color: #fff;
 }
+
 .la-ball-beat.la-dark {
     color: #333;
 }
+
 .la-ball-beat > div {
     display: inline-block;
     float: none;
     background-color: currentColor;
     border: 0 solid currentColor;
 }
+
 .la-ball-beat {
     width: 54px;
     height: 18px;
 }
+
 .la-ball-beat > div {
     width: 10px;
     height: 10px;
@@ -796,42 +847,47 @@ video{
          -o-animation: ball-beat .7s -.15s infinite linear;
             animation: ball-beat .7s -.15s infinite linear;
 }
+
 .la-ball-beat > div:nth-child(2n-1) {
     -webkit-animation-delay: -.5s;
        -moz-animation-delay: -.5s;
          -o-animation-delay: -.5s;
             animation-delay: -.5s;
 }
+
 .la-ball-beat.la-sm {
     width: 26px;
     height: 8px;
 }
+
 .la-ball-beat.la-sm > div {
     width: 4px;
     height: 4px;
     margin: 2px;
 }
+
 .la-ball-beat.la-2x {
     width: 108px;
     height: 36px;
 }
+
 .la-ball-beat.la-2x > div {
     width: 20px;
     height: 20px;
     margin: 8px;
 }
+
 .la-ball-beat.la-3x {
     width: 162px;
     height: 54px;
 }
+
 .la-ball-beat.la-3x > div {
     width: 30px;
     height: 30px;
     margin: 12px;
 }
-/*
- * Animation
- */
+
 @-webkit-keyframes ball-beat {
     50% {
         opacity: .2;
@@ -844,6 +900,7 @@ video{
                 transform: scale(1);
     }
 }
+
 @-moz-keyframes ball-beat {
     50% {
         opacity: .2;
@@ -856,6 +913,7 @@ video{
              transform: scale(1);
     }
 }
+
 @-o-keyframes ball-beat {
     50% {
         opacity: .2;
@@ -868,6 +926,7 @@ video{
            transform: scale(1);
     }
 }
+
 @keyframes ball-beat {
     50% {
         opacity: .2;
