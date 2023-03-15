@@ -108,7 +108,7 @@ TeamTalk is a real-time video conferencing website that provides convenient vide
 
 ## API Doc
 
-- [Link](https://app.swaggerhub.com/apis-docs/AnsonChen11/team-talk/1.0.0#/)
+- [Link](https://app.swaggerhub.com/apis-docs/AnsonChen11/TeamTalk/1.0.0#/)
 ## Contact
 
 - Developer: Hungwei, Chen (AnsonChen)
