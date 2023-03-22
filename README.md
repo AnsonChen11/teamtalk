@@ -10,6 +10,18 @@ TeamTalk is a real-time video conferencing website that provides convenient vide
 - Test password: test123
 
 # Demo
+### Preview screen before joining a room & Real-time chat room
+
+![entering](https://user-images.githubusercontent.com/110713031/226884752-86bdea65-1b2b-4001-8076-3f54b4243ebd.gif)
+![chat](https://user-images.githubusercontent.com/110713031/226884803-0dc16527-0758-4c1a-8795-e3bf6d132582.gif)
+### Collaborative whiteboard & Screen sharing
+
+![whiteboard](https://user-images.githubusercontent.com/110713031/226884822-e3ce36c8-4580-4725-9520-4543ec3516ae.gif)
+![share](https://user-images.githubusercontent.com/110713031/226884849-6617d5b4-f635-4f9e-857d-43378bdf741d.gif)
+
+### Recording
+
+![recording](https://user-images.githubusercontent.com/110713031/226884869-6c882e76-7a57-4f7f-8083-6e01930ac55b.gif)
 
 # Table of Contents
 - [Main Features](#main-features)
