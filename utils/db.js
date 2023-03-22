@@ -10,13 +10,22 @@ const DBConnectOptions = {
 };
 
 
-const connectToMongoDB  = () =>{
-    mongoose.connect(
-        mongoURI,
-        DBConnectOptions
-    )
-    .then(() => console.log("MongoDB Connected."))
-    .catch((err) => console.log(err));
+// const connectToMongoDB  = () =>{
+//     mongoose.connect(
+//         mongoURI,
+//         DBConnectOptions
+//     )
+//     .then(() => console.log("MongoDB Connected."))
+//     .catch((err) => console.log(err));
+// };
+const connectToMongoDB = async() => {
+    try{
+      await mongoose.connect(mongoURI, DBConnectOptions);
+      return "MongoDB Connected.";
+    } 
+    catch (err){
+      return err;
+    }
 };
 
 module.exports = { connectToMongoDB };
