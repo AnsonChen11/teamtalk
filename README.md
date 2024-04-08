@@ -3,6 +3,7 @@
 # TeamTalk
 TeamTalk is a real-time video conferencing website that provides convenient video calling, instant messaging rooms, and collaborative whiteboard functionality. With TeamTalk, you can easily stay connected and aligned with your team, no matter where you are.
 
+**Note: This project is no longer maintained.**
 - Website URL: <a>https://teamtalk.buzz/</a>
 
 - Test account: test@test.com
